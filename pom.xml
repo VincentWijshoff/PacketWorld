@@ -85,6 +85,8 @@
                 <configuration>
                     <release>${project.java.version}</release>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
+                    <source>16</source>
+                    <target>16</target>
                 </configuration>
             </plugin>
             <plugin>
