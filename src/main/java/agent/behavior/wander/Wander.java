@@ -33,8 +33,40 @@ public class Wander extends Behavior {
             // cannot see any destination, so walk in a random direction in the hopes of finding one next move
             walkRandom(agentState, agentAction);
         }
-        // placeholder, something always has to happen
-        walkRandom(agentState, agentAction);
+        // locate the closest destination
+        // first check the neighbours
+        for(CellPerception p : agentState.getPerception().getNeighbours()){
+            if(p == null) continue;
+            if(p.containsAnyDestination()){
+                // drop the packet
+                agentAction.putPacket(p.getX(), p.getY());
+                return;
+            }
+        }
+        // no destination in the neighbouring area, search rest of the perception of the agent
+        // get the closest destination by going through all destinations in view
+        CellPerception[][] fullArea = getViewArea(agentState);
+        double closestDist = Double.POSITIVE_INFINITY;
+        CellPerception closestDest = null;
+        for (int i = 0; i < fullArea.length; i++) {
+            for (int j = 0; j < fullArea[0].length; j++) {
+                if(fullArea[i][j] != null && fullArea[i][j].containsAnyDestination()){
+                    if(Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY()) < closestDist){
+                        closestDist = Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY());
+                        closestDest = fullArea[i][j];
+                    }
+                }
+            }
+        }
+
+        // if no packets, walk randomly
+        if(closestDest == null){
+            walkRandom(agentState, agentAction);
+            return;
+        }
+
+        // now we determine the move to get to the destination as fast as possible
+        moveTo(closestDest.getX(), closestDest.getY(), agentState, agentAction);
     }
 
     private void findPacket(AgentState agentState, AgentAction agentAction){
@@ -53,32 +85,27 @@ public class Wander extends Behavior {
             }
         }
             // no packet in the neighbouring area, search rest of the perception of the agent
-            // get all packets in a list
+            // get the closest packet by going through all packets in view
         CellPerception[][] fullArea = getViewArea(agentState);
-        ArrayList<CellPerception> packetList = new ArrayList<>();
+        double closestDist = Double.POSITIVE_INFINITY;
+        CellPerception closestPacket = null;
         for (int i = 0; i < fullArea.length; i++) {
             for (int j = 0; j < fullArea[0].length; j++) {
                 if(fullArea[i][j] != null && fullArea[i][j].containsPacket()){
-                    packetList.add(fullArea[i][j]);
+                    if(Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY()) < closestDist){
+                        closestDist = Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY());
+                        closestPacket = fullArea[i][j];
+                    }
                 }
             }
         }
 
             // if no packets, walk randomly
-        if(packetList.size() == 0){
+        if(closestPacket == null){
             walkRandom(agentState, agentAction);
             return;
         }
 
-            // now get the packet closest to the agent
-        double closestDist = Double.POSITIVE_INFINITY;
-        CellPerception closestPacket = null;
-        for (CellPerception cell : packetList) {
-            if(Perception.distance(agentState.getX(), agentState.getY(), cell.getX(), cell.getY()) < closestDist){
-                closestDist = Perception.distance(agentState.getX(), agentState.getY(), cell.getX(), cell.getY());
-                closestPacket = cell;
-            }
-        }
             // now we determine the move to get to the packet as fast as possible
         moveTo(closestPacket.getX(), closestPacket.getY(), agentState, agentAction);
     }
@@ -99,8 +126,17 @@ public class Wander extends Behavior {
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction){
         System.out.println("X: " + i);
         System.out.println("Y: " + j);
-        // TODO make move to most optimal position to get to new position
-        walkRandom(agentState, agentAction);
+        // TODO make an optimal path (checking obstacles and stuff) ideally generate path to all packets in sight and take shortest
+        if(i == agentState.getX()){
+            agentAction.step(i,  j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1);
+            return;
+        }
+        if(j == agentState.getY()){
+            agentAction.step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1, j);
+            return;
+        }
+        agentAction.step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1,
+                j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1);
     }
 
     private void walkRandom(AgentState agentState, AgentAction agentAction){
