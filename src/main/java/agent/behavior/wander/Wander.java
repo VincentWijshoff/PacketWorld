@@ -30,7 +30,7 @@ public class Wander extends Behavior {
     }
 
     private void findDestination(AgentState agentState, AgentAction agentAction){
-        if(!agentState.seesDestination()){
+        if(!agentState.seesDestination(agentState.getCarry().get().getColor())){
             // cannot see any destination, so walk in a random direction in the hopes of finding one next move
             walkRandom(agentState, agentAction);
             return;
@@ -39,7 +39,7 @@ public class Wander extends Behavior {
         // first check the neighbours
         for(CellPerception p : agentState.getPerception().getNeighbours()){
             if(p == null) continue;
-            if(p.containsAnyDestination()){
+            if(p.containsDestination(agentState.getCarry().get().getColor())){
                 // drop the packet
                 agentAction.putPacket(p.getX(), p.getY());
                 return;
@@ -52,7 +52,7 @@ public class Wander extends Behavior {
         CellPerception closestDest = null;
         for (int i = 0; i < fullArea.length; i++) {
             for (int j = 0; j < fullArea[0].length; j++) {
-                if(fullArea[i][j] != null && fullArea[i][j].containsAnyDestination()){
+                if(fullArea[i][j] != null && fullArea[i][j].containsDestination(agentState.getCarry().get().getColor())){
                     if(Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY()) < closestDist){
                         closestDist = Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY());
                         closestDest = fullArea[i][j];
