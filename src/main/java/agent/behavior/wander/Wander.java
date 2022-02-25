@@ -33,6 +33,7 @@ public class Wander extends Behavior {
         if(!agentState.seesDestination()){
             // cannot see any destination, so walk in a random direction in the hopes of finding one next move
             walkRandom(agentState, agentAction);
+            return;
         }
         // locate the closest destination
         // first check the neighbours
@@ -74,6 +75,7 @@ public class Wander extends Behavior {
         if(!agentState.seesPacket()){
             // cannot see any packet, so walk in a random direction in the hopes of finding one on the next move
             walkRandom(agentState, agentAction);
+            return;
         }
         // locate the closest packet
             // first check the neighbours
@@ -128,18 +130,55 @@ public class Wander extends Behavior {
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction){
         // TODO make an optimal path (checking obstacles and stuff) ideally generate path to all packets in sight and take shortest
         if(i == agentState.getX()){
-            agentAction.step(i,  j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1);
+            step(i,  j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1, agentState, agentAction);
             return;
         }
         if(j == agentState.getY()){
-            agentAction.step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1, j);
+            step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1, j, agentState, agentAction);
             return;
         }
-        agentAction.step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1,
-                j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1);
+        step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1,
+                j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1, agentState, agentAction);
+    }
+
+    private void step(int x, int y, AgentState agentState, AgentAction agentAction){
+        var perception = agentState.getPerception();
+        if (perception.getCellPerceptionOnAbsPos(x, y) != null && perception.getCellPerceptionOnAbsPos(x, y).isWalkable()) {
+            agentAction.step(x, y);
+            return;
+        }
+        walkRandom(agentState, agentAction);
     }
 
     private void walkRandom(AgentState agentState, AgentAction agentAction){
+        // NOTE: do not use the local step() function here, it will have infinite loops
+        // we want to first try to move away from walls, after that a random walk should happen
+        int left = agentState.getPerception().getOffsetX() - agentState.getX();
+        int top = agentState.getPerception().getOffsetY() - agentState.getY();
+        int right = agentState.getPerception().getOffsetX() + agentState.getPerception().getWidth() - agentState.getX()-1;
+        int bottom = agentState.getPerception().getOffsetY() + agentState.getPerception().getHeight() - agentState.getY()-1;
+        int xStep = 0;
+        int yStep = 0;
+        // check if against left or right wall
+        if(left*-1 < right){ // left wall
+            xStep += 1;
+        }else if(left*-1 > right){ // right wall
+            xStep -= 1;
+        }
+        // check if against upper or lower wall
+        if(top*-1 < bottom){ // left wall
+            yStep += 1;
+        }else if(top*-1 > bottom){ // right wall
+            yStep -= 1;
+        }
+        // now move in the direction, else move randomly
+        if(xStep != 0 || yStep!= 0){
+            var perception = agentState.getPerception();
+            if (perception.getCellPerceptionOnRelPos(xStep, yStep) != null && perception.getCellPerceptionOnRelPos(xStep, yStep).isWalkable()) {
+                agentAction.step(agentState.getX() + xStep, agentState.getY() + yStep);
+                return;
+            }
+        }
         // Potential moves an agent can make (radius of 1 around the agent)
         List<Coordinate> moves = new ArrayList<>(List.of(
                 new Coordinate(1, 1), new Coordinate(-1, -1),
