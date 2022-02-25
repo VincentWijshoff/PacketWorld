@@ -112,20 +112,19 @@ public class Wander extends Behavior {
 
     private CellPerception[][] getViewArea(AgentState agentState){
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
-        int width = Math.floorDiv(agentState.getPerception().getWidth(), 2);
-        int height = Math.floorDiv(agentState.getPerception().getHeight(), 2);
-        // TODO shouldnt all views be even?
-        for(int i = -width; i<width ; i++){
-            for(int j = -height; j<height ; j++){
-                perceptionList[i+width][j+height] = agentState.getPerception().getCellPerceptionOnRelPos(i, j);
+        int left = agentState.getPerception().getOffsetX() - agentState.getX();
+        int top = agentState.getPerception().getOffsetY() - agentState.getY();
+        int right = agentState.getPerception().getOffsetX() + agentState.getPerception().getWidth() - agentState.getX();
+        int bottom = agentState.getPerception().getOffsetY() + agentState.getPerception().getHeight() - agentState.getY();
+        for(int i = left; i<right ; i++){
+            for(int j = top; j<bottom ; j++){
+                perceptionList[i-left][j-top] = agentState.getPerception().getCellPerceptionOnRelPos(i, j);
             }
         }
         return perceptionList;
     }
 
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction){
-        System.out.println("X: " + i);
-        System.out.println("Y: " + j);
         // TODO make an optimal path (checking obstacles and stuff) ideally generate path to all packets in sight and take shortest
         if(i == agentState.getX()){
             agentAction.step(i,  j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1);
