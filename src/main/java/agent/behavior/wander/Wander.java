@@ -24,6 +24,7 @@ public class Wander extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         if(agentState.hasCarry()){
             findDestination(agentState, agentAction);
+            return;
         }
         findPacket(agentState, agentAction);
     }
