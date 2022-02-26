@@ -1,16 +1,22 @@
 package agent.behavior.basic;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import com.google.common.collect.Table;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import environment.Representation;
+import environment.world.destination.DestinationRep;
+import environment.world.packet.Packet;
+import environment.world.packet.PacketRep;
 
 public class Basic extends Behavior {
 
@@ -22,95 +28,70 @@ public class Basic extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        if(agentState.hasCarry()){
+        if (agentState.hasCarry()) {
             findDestination(agentState, agentAction);
             return;
         }
         findPacket(agentState, agentAction);
     }
 
-    private void findDestination(AgentState agentState, AgentAction agentAction){
-        if(!agentState.seesDestination(agentState.getCarry().get().getColor())){
-            // cannot see any destination, so walk in a random direction in the hopes of finding one next move
-            walkRandom(agentState, agentAction);
-            return;
-        }
-        // locate the closest destination
-        // first check the neighbours
-        for(CellPerception p : agentState.getPerception().getNeighbours()){
-            if(p == null) continue;
-            if(p.containsDestination(agentState.getCarry().get().getColor())){
-                // drop the packet
-                agentAction.putPacket(p.getX(), p.getY());
-                return;
-            }
-        }
-        // no destination in the neighbouring area, search rest of the perception of the agent
-        // get the closest destination by going through all destinations in view
-        CellPerception[][] fullArea = getViewArea(agentState);
-        double closestDist = Double.POSITIVE_INFINITY;
-        CellPerception closestDest = null;
-        for (int i = 0; i < fullArea.length; i++) {
-            for (int j = 0; j < fullArea[0].length; j++) {
-                if(fullArea[i][j] != null && fullArea[i][j].containsDestination(agentState.getCarry().get().getColor())){
-                    if(Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY()) < closestDist){
-                        closestDist = Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY());
-                        closestDest = fullArea[i][j];
-                    }
-                }
-            }
-        }
+    // precondition: agentState.getCarry().isPresent()
+    private void findDestination(AgentState agentState, AgentAction agentAction) {
+        Color packetColor = agentState.getCarry().get().getColor();
 
-        // if no packets, walk randomly
-        if(closestDest == null){
-            walkRandom(agentState, agentAction);
-            return;
-        }
+        // Get all Destinations by going through view, sorted by distance from agent
+        List<CellPerception> closeDests = findOfType(DestinationRep.class, agentState);
+        // Get the closest destination with the correct color
+        CellPerception closestDest = closeDests.stream()
+                .filter(dest -> dest.containsDestination(packetColor))
+                .findFirst().orElse(null);
 
-        // now we determine the move to get to the destination as fast as possible
-        moveTo(closestDest.getX(), closestDest.getY(), agentState, agentAction);
+        if (closestDest == null) walkRandom(agentState, agentAction);
+        else if (isNeighbour(closestDest, agentState)) agentAction.putPacket(closestDest.getX(), closestDest.getY());
+        else moveTo(closestDest.getX(), closestDest.getY(), agentState, agentAction);
     }
 
     private void findPacket(AgentState agentState, AgentAction agentAction){
-        if(!agentState.seesPacket()){
-            // cannot see any packet, so walk in a random direction in the hopes of finding one on the next move
-            walkRandom(agentState, agentAction);
-            return;
-        }
-        // locate the closest packet
-        // first check the neighbours
-        for(CellPerception p : agentState.getPerception().getNeighbours()){
-            if(p == null) continue;
-            if(p.containsPacket()){
-                // pickup the packet
-                agentAction.pickPacket(p.getX(), p.getY());
-                return;
-            }
-        }
-        // no packet in the neighbouring area, search rest of the perception of the agent
-        // get the closest packet by going through all packets in view
+        // Get all Packets by going through view, sorted by distance from agent: first element is the closest
+        List<CellPerception> closePackets = findOfType(PacketRep.class, agentState);
+        CellPerception closestPacket = closePackets.stream().findFirst().orElse(null);
+
+        if (closestPacket == null) walkRandom(agentState, agentAction);
+        else if (isNeighbour(closestPacket, agentState)) agentAction.pickPacket(closestPacket.getX(), closestPacket.getY());
+        else moveTo(closestPacket.getX(), closestPacket.getY(), agentState, agentAction);
+    }
+
+    /**
+     * Finds all CellPerceptions in the view that are of a given type.
+     * @param clazz The type to look for
+     * @param agentState The current agent state
+     * @return A list, sorted by distance to agent (small to big)
+     */
+    private <T extends Representation> List<CellPerception> findOfType(Class<T> clazz, AgentState agentState) {
+        // Get all in view
         CellPerception[][] fullArea = getViewArea(agentState);
-        double closestDist = Double.POSITIVE_INFINITY;
-        CellPerception closestPacket = null;
-        for (int i = 0; i < fullArea.length; i++) {
-            for (int j = 0; j < fullArea[0].length; j++) {
-                if(fullArea[i][j] != null && fullArea[i][j].containsPacket()){
-                    if(Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY()) < closestDist){
-                        closestDist = Perception.distance(agentState.getX(), agentState.getY(), fullArea[i][j].getX(), fullArea[i][j].getY());
-                        closestPacket = fullArea[i][j];
-                    }
-                }
-            }
-        }
 
-        // if no packets, walk randomly
-        if(closestPacket == null){
-            walkRandom(agentState, agentAction);
-            return;
+        // Convert to list of CellPerception with Representation of type clazz
+        List<CellPerception> fullAreaList = new ArrayList<>();
+        for (CellPerception[] c1 : fullArea) {
+            for (CellPerception c2 : c1)
+                if (c2.getRepOfType(clazz) != null) fullAreaList.add(c2);
         }
+        // Sort according to distance to agent, smallest distance first in list
+        fullAreaList.sort((p1, p2) -> {
+            double d1 = Perception.distance(agentState.getX(), agentState.getY(), p1.getX(), p1.getY());
+            double d2 = Perception.distance(agentState.getX(), agentState.getY(), p2.getX(), p2.getY());
+            return Double.compare(d1, d2);
+        });
+        return fullAreaList;
+    }
 
-        // now we determine the move to get to the packet as fast as possible
-        moveTo(closestPacket.getX(), closestPacket.getY(), agentState, agentAction);
+    // Returns true if the given cellPerception is a current neighbour of agentState
+    private boolean isNeighbour(CellPerception cellPerception, AgentState agentState) {
+        for (CellPerception neighbour : agentState.getPerception().getNeighbours()) {
+            if (cellPerception.equals(neighbour)) return true;
+        }
+        return false;
     }
 
     private CellPerception[][] getViewArea(AgentState agentState){
@@ -119,8 +100,8 @@ public class Basic extends Behavior {
         int top = agentState.getPerception().getOffsetY() - agentState.getY();
         int right = agentState.getPerception().getOffsetX() + agentState.getPerception().getWidth() - agentState.getX();
         int bottom = agentState.getPerception().getOffsetY() + agentState.getPerception().getHeight() - agentState.getY();
-        for(int i = left; i<right ; i++){
-            for(int j = top; j<bottom ; j++){
+        for (int i = left; i<right ; i++) {
+            for (int j = top; j<bottom ; j++) {
                 perceptionList[i-left][j-top] = agentState.getPerception().getCellPerceptionOnRelPos(i, j);
             }
         }
@@ -128,26 +109,30 @@ public class Basic extends Behavior {
     }
 
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction){
-        // TODO make an optimal path (checking obstacles and stuff) ideally generate path to all packets in sight and take shortest
-        if(i == agentState.getX()){
-            step(i,  j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1, agentState, agentAction);
-            return;
-        }
-        if(j == agentState.getY()){
-            step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1, j, agentState, agentAction);
-            return;
-        }
-        step(i-agentState.getX() > 0 ? agentState.getX()+1 : agentState.getX()-1,
-                j-agentState.getY() > 0 ? agentState.getY()+1 : agentState.getY()-1, agentState, agentAction);
-    }
+        // Potential moves an agent can make (radius of 1 around the agent)
+        List<Coordinate> potMoves = new ArrayList<>(List.of(
+                new Coordinate(1, 1), new Coordinate(-1, -1),
+                new Coordinate(1, 0), new Coordinate(-1, 0),
+                new Coordinate(0, 1), new Coordinate(0, -1),
+                new Coordinate(1, -1), new Coordinate(-1, 1)
+        ));
+        Coordinate bestMove = potMoves.stream()
+                // Map relative to abs coordinates
+                .map(move -> new Coordinate(move.getX() + agentState.getX(), move.getY() + agentState.getY()))
+                // Filter impossible moves away
+                .filter(move -> {
+                    CellPerception c = agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY());
+                    return (c != null && c.isWalkable());
+                })
+                // Use move that results in minimum distance to target
+                .min((move1, move2) -> {
+                    double d1 = Perception.manhattanDistance(move1.getX(), move1.getY(), i, j);
+                    double d2 = Perception.manhattanDistance(move2.getX(), move2.getY(), i, j);
+                    return Double.compare(d1, d2);
+                }).orElse(null);
 
-    private void step(int x, int y, AgentState agentState, AgentAction agentAction){
-        var perception = agentState.getPerception();
-        if (perception.getCellPerceptionOnAbsPos(x, y) != null && perception.getCellPerceptionOnAbsPos(x, y).isWalkable()) {
-            agentAction.step(x, y);
-            return;
-        }
-        walkRandom(agentState, agentAction);
+        // If bestMove == null, agent stuck?
+        agentAction.step(bestMove.getX(), bestMove.getY());
     }
 
     private void walkRandom(AgentState agentState, AgentAction agentAction){
