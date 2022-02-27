@@ -3,19 +3,16 @@ package agent.behavior.basic;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import com.google.common.collect.Table;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import environment.Representation;
 import environment.world.destination.DestinationRep;
-import environment.world.packet.Packet;
 import environment.world.packet.PacketRep;
 
 public class Basic extends Behavior {
@@ -51,7 +48,7 @@ public class Basic extends Behavior {
         else moveTo(closestDest.getX(), closestDest.getY(), agentState, agentAction);
     }
 
-    private void findPacket(AgentState agentState, AgentAction agentAction){
+    private void findPacket(AgentState agentState, AgentAction agentAction) {
         // Get all Packets by going through view, sorted by distance from agent: first element is the closest
         List<CellPerception> closePackets = findOfType(PacketRep.class, agentState);
         CellPerception closestPacket = closePackets.stream().findFirst().orElse(null);
@@ -94,21 +91,21 @@ public class Basic extends Behavior {
         return false;
     }
 
-    private CellPerception[][] getViewArea(AgentState agentState){
+    private CellPerception[][] getViewArea(AgentState agentState) {
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
         int left = agentState.getPerception().getOffsetX() - agentState.getX();
         int top = agentState.getPerception().getOffsetY() - agentState.getY();
         int right = agentState.getPerception().getOffsetX() + agentState.getPerception().getWidth() - agentState.getX();
         int bottom = agentState.getPerception().getOffsetY() + agentState.getPerception().getHeight() - agentState.getY();
-        for (int i = left; i<right ; i++) {
-            for (int j = top; j<bottom ; j++) {
-                perceptionList[i-left][j-top] = agentState.getPerception().getCellPerceptionOnRelPos(i, j);
+        for (int i = left; i < right ; i++) {
+            for (int j = top; j < bottom ; j++) {
+                perceptionList[i - left][j - top] = agentState.getPerception().getCellPerceptionOnRelPos(i, j);
             }
         }
         return perceptionList;
     }
 
-    private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction){
+    private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction) {
         // Potential moves an agent can make (radius of 1 around the agent)
         List<Coordinate> potMoves = new ArrayList<>(List.of(
                 new Coordinate(1, 1), new Coordinate(-1, -1),
@@ -135,7 +132,7 @@ public class Basic extends Behavior {
         agentAction.step(bestMove.getX(), bestMove.getY());
     }
 
-    private void walkRandom(AgentState agentState, AgentAction agentAction){
+    private void walkRandom(AgentState agentState, AgentAction agentAction) {
         // Potential moves an agent can make (radius of 1 around the agent)
         List<Coordinate> moves = new ArrayList<>(List.of(
                 new Coordinate(1, 1), new Coordinate(-1, -1),
