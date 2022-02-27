@@ -75,7 +75,7 @@ public class Basic extends Behavior {
         List<CellPerception> fullAreaList = new ArrayList<>();
         for (CellPerception[] c1 : fullArea) {
             for (CellPerception c2 : c1)
-                if (c2.getRepOfType(clazz) != null) fullAreaList.add(c2);
+                if (c2 != null && c2.getRepOfType(clazz) != null) fullAreaList.add(c2);
         }
         // Sort according to distance to agent, smallest distance first in list
         fullAreaList.sort((p1, p2) -> {
