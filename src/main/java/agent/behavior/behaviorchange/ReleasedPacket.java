@@ -10,6 +10,6 @@ public class ReleasedPacket extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return false;
+        return !getAgentState().hasCarry();
     }
 }
