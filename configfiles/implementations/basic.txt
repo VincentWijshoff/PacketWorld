@@ -50,11 +50,23 @@ priority 0
 source 4        # ReleasePacket
 target 2        # MoveTo
 
-2 agent.behavior.behaviorChange.FoundDestination
+agent.behavior.behaviorChange.NoGoal
 nbArgs 0
-3 agent.behavior.behaviorChange.FoundPacket
-nbArgs 0
+priority 0
+source 3        # PickupPacket
+target 1        # Wander
 
+agent.behavior.behaviorChange.NoGoal
+nbArgs 0
+priority 0
+source 4        # ReleasePacket
+target 1        # Wander
+
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 0
+source 1        # Wander
+target 2        # MoveTo
 
 # ----------------
 # Further comments
