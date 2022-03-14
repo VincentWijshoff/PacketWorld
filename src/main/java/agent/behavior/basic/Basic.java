@@ -1,62 +1,14 @@
 package agent.behavior.basic;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import agent.AgentAction;
-import agent.AgentCommunication;
 import agent.AgentState;
-import agent.behavior.Behavior;
 import environment.CellPerception;
-import environment.Coordinate;
 import environment.Perception;
 import environment.Representation;
-import environment.world.destination.DestinationRep;
-import environment.world.packet.PacketRep;
 
-public class Basic extends Behavior {
-
-    @Override
-    public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // No communication
-    }
-
-
-    @Override
-    public void act(AgentState agentState, AgentAction agentAction) {
-        if (agentState.hasCarry()) {
-            findDestination(agentState, agentAction);
-            return;
-        }
-        findPacket(agentState, agentAction);
-    }
-
-    // precondition: agentState.getCarry().isPresent()
-    private void findDestination(AgentState agentState, AgentAction agentAction) {
-        Color packetColor = agentState.getCarry().get().getColor();
-
-        // Get all Destinations by going through view, sorted by distance from agent
-        List<CellPerception> closeDests = findOfType(DestinationRep.class, agentState);
-        // Get the closest destination with the correct color
-        CellPerception closestDest = closeDests.stream()
-                .filter(dest -> dest.containsDestination(packetColor))
-                .findFirst().orElse(null);
-
-        if (closestDest == null) walkRandom(agentState, agentAction);
-        else if (isNeighbour(closestDest, agentState)) agentAction.putPacket(closestDest.getX(), closestDest.getY());
-        else moveTo(closestDest.getX(), closestDest.getY(), agentState, agentAction);
-    }
-
-    private void findPacket(AgentState agentState, AgentAction agentAction) {
-        // Get all Packets by going through view, sorted by distance from agent: first element is the closest
-        List<CellPerception> closePackets = findOfType(PacketRep.class, agentState);
-        CellPerception closestPacket = closePackets.stream().findFirst().orElse(null);
-
-        if (closestPacket == null) walkRandom(agentState, agentAction);
-        else if (isNeighbour(closestPacket, agentState)) agentAction.pickPacket(closestPacket.getX(), closestPacket.getY());
-        else moveTo(closestPacket.getX(), closestPacket.getY(), agentState, agentAction);
-    }
+public class Basic{
 
     /**
      * Finds all CellPerceptions in the view that are of a given type.
@@ -83,14 +35,6 @@ public class Basic extends Behavior {
         return fullAreaList;
     }
 
-    // Returns true if the given cellPerception is a current neighbour of agentState
-    private boolean isNeighbour(CellPerception cellPerception, AgentState agentState) {
-        for (CellPerception neighbour : agentState.getPerception().getNeighbours()) {
-            if (cellPerception.equals(neighbour)) return true;
-        }
-        return false;
-    }
-
     private static CellPerception[][] getViewArea(AgentState agentState) {
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
         int left = agentState.getPerception().getOffsetX() - agentState.getX();
@@ -105,60 +49,4 @@ public class Basic extends Behavior {
         return perceptionList;
     }
 
-    private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction) {
-        // Potential moves an agent can make (radius of 1 around the agent)
-        List<Coordinate> potMoves = new ArrayList<>(List.of(
-                new Coordinate(1, 1), new Coordinate(-1, -1),
-                new Coordinate(1, 0), new Coordinate(-1, 0),
-                new Coordinate(0, 1), new Coordinate(0, -1),
-                new Coordinate(1, -1), new Coordinate(-1, 1)
-        ));
-        Coordinate bestMove = potMoves.stream()
-                // Map relative to abs coordinates
-                .map(move -> new Coordinate(move.getX() + agentState.getX(), move.getY() + agentState.getY()))
-                // Filter impossible moves away
-                .filter(move -> {
-                    CellPerception c = agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY());
-                    return (c != null && c.isWalkable());
-                })
-                // Use move that results in minimum distance to target
-                .min((move1, move2) -> {
-                    double d1 = Perception.manhattanDistance(move1.getX(), move1.getY(), i, j);
-                    double d2 = Perception.manhattanDistance(move2.getX(), move2.getY(), i, j);
-                    return Double.compare(d1, d2);
-                }).orElse(null);
-
-        // If bestMove == null, agent stuck?
-        agentAction.step(bestMove.getX(), bestMove.getY());
-    }
-
-    private void walkRandom(AgentState agentState, AgentAction agentAction) {
-        // Potential moves an agent can make (radius of 1 around the agent)
-        List<Coordinate> moves = new ArrayList<>(List.of(
-                new Coordinate(1, 1), new Coordinate(-1, -1),
-                new Coordinate(1, 0), new Coordinate(-1, 0),
-                new Coordinate(0, 1), new Coordinate(0, -1),
-                new Coordinate(1, -1), new Coordinate(-1, 1)
-        ));
-
-        // Shuffle moves randomly
-        Collections.shuffle(moves);
-
-        // Check for viable moves
-        for (var move : moves) {
-            var perception = agentState.getPerception();
-            int x = move.getX();
-            int y = move.getY();
-
-            // If the area is null, it is outside the bounds of the environment
-            //  (when the agent is at any edge for example some moves are not possible)
-            if (perception.getCellPerceptionOnRelPos(x, y) != null && perception.getCellPerceptionOnRelPos(x, y).isWalkable()) {
-                agentAction.step(agentState.getX() + x, agentState.getY() + y);
-                return;
-            }
-        }
-
-        // No viable moves, skip turn
-        agentAction.skip();
-    }
 }
