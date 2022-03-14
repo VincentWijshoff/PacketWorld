@@ -64,7 +64,7 @@ public class Basic extends Behavior {
      * @param agentState The current agent state
      * @return A list, sorted by distance to agent (small to big)
      */
-    private <T extends Representation> List<CellPerception> findOfType(Class<T> clazz, AgentState agentState) {
+    public static <T extends Representation> List<CellPerception> findOfType(Class<T> clazz, AgentState agentState) {
         // Get all in view
         CellPerception[][] fullArea = getViewArea(agentState);
 
@@ -91,7 +91,7 @@ public class Basic extends Behavior {
         return false;
     }
 
-    private CellPerception[][] getViewArea(AgentState agentState) {
+    private static CellPerception[][] getViewArea(AgentState agentState) {
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
         int left = agentState.getPerception().getOffsetX() - agentState.getX();
         int top = agentState.getPerception().getOffsetY() - agentState.getY();
