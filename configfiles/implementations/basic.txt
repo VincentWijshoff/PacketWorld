@@ -9,7 +9,7 @@ nbStates 4                          # The basic behavior is implemented in a sin
 
 
 # Enumeration of the behavior agent states
-1 agent.behavior.basic.Wander
+1 agent.behavior.behavior.Wander
 nbArgs 0
 2 agent.behavior.behavior.MoveTo
 nbArgs 2
@@ -24,7 +24,7 @@ nbArgs 0                            # 0 arguments required for the constructor
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 3
+nbChanges 7
 
 agent.behavior.behaviorChange.CanPickup
 nbArgs 2
