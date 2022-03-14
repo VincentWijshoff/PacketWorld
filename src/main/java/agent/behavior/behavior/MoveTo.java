@@ -5,7 +5,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 
-public class FindDestnation extends Behavior {
+public class MoveTo extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
 
