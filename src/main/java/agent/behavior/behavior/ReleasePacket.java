@@ -24,13 +24,7 @@ public class ReleasePacket extends Behavior {
     }
 
     private void releasePacket(AgentState agentState, AgentAction agentAction){
-        Color packetColor = agentState.getCarry().get().getColor();
-        List<CellPerception> closeDests = findOfType(DestinationRep.class, agentState);
-        // Get the closest destination with the correct color
-        CellPerception closestDest = closeDests.stream()
-                .filter(dest -> dest.containsDestination(packetColor))
-                .findFirst().orElse(null);
-        agentAction.putPacket(closestDest.getX(), closestDest.getY());
+        agentAction.putPacket(Integer.parseInt(agentState.getMemoryFragment("x")),
+                Integer.parseInt(agentState.getMemoryFragment("y")));
     }
-
 }

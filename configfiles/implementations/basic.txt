@@ -12,7 +12,7 @@ nbStates 4                          # The basic behavior is implemented in a sin
 1 agent.behavior.behavior.Wander
 nbArgs 0
 2 agent.behavior.behavior.MoveTo
-nbArgs 2
+nbArgs 0
 3 agent.behavior.behavior.PickupPacket
 nbArgs 0
 4 agent.behavior.behavior.ReleasePacket
@@ -27,24 +27,24 @@ nbArgs 0                            # 0 arguments required for the constructor
 nbChanges 7
 
 agent.behavior.behaviorChange.CanPickup
-nbArgs 2
+nbArgs 0
 priority 0
 source 2        # MoveTo
 target 3        # PickupPacket
 
 agent.behavior.behaviorChange.CanRelease
-nbArgs 2
+nbArgs 0
 priority 0
 source 2        # MoveTo
 target 4        # ReleasePacket
 
-agent.behavior.behaviorChange.FoundDestination
+agent.behavior.behaviorChange.SeesGoal
 nbArgs 0
 priority 0
 source 3        # PickupPacket
 target 2        # MoveTo
 
-agent.behavior.behaviorChange.FoundPacket
+agent.behavior.behaviorChange.SeesGoal
 nbArgs 0
 priority 0
 source 4        # ReleasePacket

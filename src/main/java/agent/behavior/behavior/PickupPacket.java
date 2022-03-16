@@ -19,8 +19,7 @@ public class PickupPacket extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        List<CellPerception> closePackets = findOfType(PacketRep.class, agentState);
-        CellPerception closestPacket = closePackets.stream().findFirst().orElse(null);
-        agentAction.pickPacket(closestPacket.getX(), closestPacket.getY());
+        agentAction.pickPacket(Integer.parseInt(agentState.getMemoryFragment("x")),
+                Integer.parseInt(agentState.getMemoryFragment("y")));
     }
 }

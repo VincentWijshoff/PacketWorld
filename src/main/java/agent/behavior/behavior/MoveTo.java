@@ -15,9 +15,7 @@ public class MoveTo extends Behavior {
 
     private int x, y;
 
-    public MoveTo(int x, int y){
-        this.x = x;
-        this.y = y;
+    public MoveTo(){
     }
 
     @Override
@@ -27,6 +25,8 @@ public class MoveTo extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        this.x = Integer.parseInt(agentState.getMemoryFragment("x"));
+        this.y = Integer.parseInt(agentState.getMemoryFragment("y"));
         this.moveTo(this.x, this.y, agentState, agentAction);
     }
 
