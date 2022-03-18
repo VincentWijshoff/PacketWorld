@@ -5,12 +5,18 @@ description "Basic behavior"
 # ------------------------------------------------
 # The amount of the behavior states the agent has
 # ------------------------------------------------
-nbStates 1                          # The basic behavior is implemented in a single state
+nbStates 4                          # The basic behavior is implemented in a single state
 
 
 # Enumeration of the behavior agent states
-1 agent.behavior.basic.Basic     # First and only agent state of class "agent.behavior.basic.Basic"
-nbArgs 0                            # 0 arguments required for the constructor of "agent.behavior.basic.Basic"
+1 agent.behavior.behavior.Wander
+nbArgs 0
+2 agent.behavior.behavior.MoveTo
+nbArgs 0
+3 agent.behavior.behavior.PickupPacket
+nbArgs 0
+4 agent.behavior.behavior.ReleasePacket
+nbArgs 0                            # 0 arguments required for the constructor
 
 
 
@@ -18,11 +24,49 @@ nbArgs 0                            # 0 arguments required for the constructor o
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 0                         # This implementation does not have any behavior changes
-                                    # (no different agent behavior state to change to)
+nbChanges 7
 
+agent.behavior.behaviorChange.CanPickup
+nbArgs 0
+priority 0
+source 2        # MoveTo
+target 3        # PickupPacket
 
+agent.behavior.behaviorChange.CanRelease
+nbArgs 0
+priority 0
+source 2        # MoveTo
+target 4        # ReleasePacket
 
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 0
+source 3        # PickupPacket
+target 2        # MoveTo
+
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 0
+source 4        # ReleasePacket
+target 2        # MoveTo
+
+agent.behavior.behaviorChange.NoGoal
+nbArgs 0
+priority 0
+source 3        # PickupPacket
+target 1        # Wander
+
+agent.behavior.behaviorChange.NoGoal
+nbArgs 0
+priority 0
+source 4        # ReleasePacket
+target 1        # Wander
+
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 0
+source 1        # Wander
+target 2        # MoveTo
 
 # ----------------
 # Further comments
