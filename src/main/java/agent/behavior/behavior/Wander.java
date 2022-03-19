@@ -5,6 +5,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
+import environment.Perception;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +33,27 @@ public class Wander extends Behavior {
 
         // Shuffle moves randomly
         Collections.shuffle(moves);
+
+
+        if (true) { //enable optimization
+            //if rightmost cell is further away than left most -> move right
+            //the idea is that this maximizes the perception -> packets/destinations should be discovered quicker
+            //NOTE: it is important to prioritise moves by swapping with counterpart, not by placing the move first. This causes the agent to be stuck in places such as 'tight hallways'. TODO: draw diagram of this scenario
+            //TODO: implement diagonal moves
+            Perception pc = agentState.getPerception();
+            if (pc.getWidth() - pc.getSelfX() - 1 > pc.getSelfX() && moves.indexOf(new Coordinate(1, 0)) > moves.indexOf(new Coordinate(-1, 0))) {
+                Collections.swap(moves, moves.indexOf(new Coordinate(1, 0)), moves.indexOf(new Coordinate(-1, 0))); //prioritise right
+            }
+            if (pc.getWidth() - pc.getSelfX() - 1 < pc.getSelfX() && moves.indexOf(new Coordinate(1, 0)) < moves.indexOf(new Coordinate(-1, 0))) {
+                Collections.swap(moves, moves.indexOf(new Coordinate(1, 0)), moves.indexOf(new Coordinate(-1, 0))); //prioritise left
+            }
+            if (pc.getHeight() - pc.getSelfY() - 1 > pc.getSelfY() && moves.indexOf(new Coordinate(0, 1)) > moves.indexOf(new Coordinate(0, -1))) {
+                Collections.swap(moves, moves.indexOf(new Coordinate(0, 1)), moves.indexOf(new Coordinate(0, -1))); //prioritise down
+            }
+            if (pc.getHeight() - pc.getSelfY() - 1 < pc.getSelfY() && moves.indexOf(new Coordinate(0, 1)) < moves.indexOf(new Coordinate(0, -1))) {
+                Collections.swap(moves, moves.indexOf(new Coordinate(0, 1)), moves.indexOf(new Coordinate(0, -1))); //prioritise up
+            }
+        }
 
         // Check for viable moves
         for (var move : moves) {
