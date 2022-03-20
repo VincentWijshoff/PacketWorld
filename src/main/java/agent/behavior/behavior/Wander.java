@@ -61,19 +61,20 @@ public class Wander extends Behavior {
             //if rightmost cell is further away than left most -> move right
             //the idea is that this maximizes the perception -> packets/destinations should be discovered quicker
             //NOTE: it is important to prioritise moves by swapping with counterpart, not by placing the move first. This causes the agent to be stuck in places such as 'tight hallways'. TODO: draw diagram of this scenario
-            //TODO: implement diagonal moves
             Perception pc = agentState.getPerception();
-            if (pc.getWidth() - pc.getSelfX() - 1 > pc.getSelfX() && moves.indexOf(new Coordinate(1, 0)) > moves.indexOf(new Coordinate(-1, 0))) {
-                Collections.swap(moves, moves.indexOf(new Coordinate(1, 0)), moves.indexOf(new Coordinate(-1, 0))); //prioritise right
+            if (pc.getWidth() - pc.getSelfX() - 1 > pc.getSelfX()) {
+                prioritizeC1(moves, new Coordinate(1, 0), new Coordinate(-1, 0));
             }
-            if (pc.getWidth() - pc.getSelfX() - 1 < pc.getSelfX() && moves.indexOf(new Coordinate(1, 0)) < moves.indexOf(new Coordinate(-1, 0))) {
-                Collections.swap(moves, moves.indexOf(new Coordinate(1, 0)), moves.indexOf(new Coordinate(-1, 0))); //prioritise left
+            if (pc.getWidth() - pc.getSelfX() - 1 < pc.getSelfX()) {
+                prioritizeC1(moves, new Coordinate(-1, 0), new Coordinate(1, 0));
+
             }
-            if (pc.getHeight() - pc.getSelfY() - 1 > pc.getSelfY() && moves.indexOf(new Coordinate(0, 1)) > moves.indexOf(new Coordinate(0, -1))) {
-                Collections.swap(moves, moves.indexOf(new Coordinate(0, 1)), moves.indexOf(new Coordinate(0, -1))); //prioritise down
+            if (pc.getHeight() - pc.getSelfY() - 1 > pc.getSelfY()) {
+                prioritizeC1(moves, new Coordinate(0, 1), new Coordinate(0, -1));
+
             }
-            if (pc.getHeight() - pc.getSelfY() - 1 < pc.getSelfY() && moves.indexOf(new Coordinate(0, 1)) < moves.indexOf(new Coordinate(0, -1))) {
-                Collections.swap(moves, moves.indexOf(new Coordinate(0, 1)), moves.indexOf(new Coordinate(0, -1))); //prioritise up
+            if (pc.getHeight() - pc.getSelfY() - 1 < pc.getSelfY()) {
+                prioritizeC1(moves, new Coordinate(0, -1), new Coordinate(0, 1));
             }
         }
 
@@ -96,6 +97,12 @@ public class Wander extends Behavior {
                 agentAction.step(agentState.getX() + x, agentState.getY() + y);
                 return;
             }
+        }
+    }
+
+    private void prioritizeC1(List<Coordinate> moves, Coordinate c1, Coordinate c2) {
+        if (moves.indexOf(c1) > moves.indexOf(c2)) {
+            Collections.swap(moves, moves.indexOf(c1), moves.indexOf(c2));
         }
     }
 
