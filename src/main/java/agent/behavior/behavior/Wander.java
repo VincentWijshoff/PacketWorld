@@ -4,12 +4,16 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import environment.world.destination.DestinationRep;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static agent.behavior.basic.Basic.findOfType;
 
 public class Wander extends Behavior {
     @Override
@@ -19,7 +23,20 @@ public class Wander extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        if (agentState.seesDestination()) {
+            this.storeDestinations(agentState, agentAction);
+        }
         this.walkRandom(agentState, agentAction);
+    }
+
+    //Store any destinations currently in vision in memory
+    private void storeDestinations(AgentState agentState, AgentAction agentAction) {
+        List<CellPerception> Dests = findOfType(DestinationRep.class, agentState);
+        for (CellPerception dest: Dests) {
+            DestinationRep destRep = dest.getRepOfType(DestinationRep.class);
+            String data = destRep.getX() + ";" + destRep.getY();
+            agentState.addMemoryFragment(destRep.getColor().toString(), data);
+        }
     }
 
     private void walkRandom(AgentState agentState, AgentAction agentAction) {

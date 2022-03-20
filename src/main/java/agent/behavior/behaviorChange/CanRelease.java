@@ -20,6 +20,7 @@ public class CanRelease extends BehaviorChange {
     @Override
     public boolean isSatisfied() {
 //        distance 1 away form destination
+        if (getAgentState().getPerception().getCellPerceptionOnAbsPos(this.x, this.y) == null) return false;
         return getAgentState().hasCarry() &&
                 getAgentState().getPerception().getCellPerceptionOnAbsPos(this.x, this.y).
                         containsDestination(getAgentState().getCarry().get().getColor()) &&
