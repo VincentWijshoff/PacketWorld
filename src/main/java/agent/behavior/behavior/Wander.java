@@ -22,9 +22,13 @@ public class Wander extends Behavior {
 
     }
 
+    public boolean optimization1 = true;
+    public boolean optimization2 = false;
+    public boolean optimization3 = true;
+
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        if (agentState.seesDestination()) {
+        if (optimization2 && agentState.seesDestination()) {
             this.storeDestinations(agentState, agentAction);
         }
         this.walkRandom(agentState, agentAction);
@@ -53,7 +57,7 @@ public class Wander extends Behavior {
         Collections.shuffle(moves);
 
 
-        if (true) { //enable optimization
+        if (optimization1) {
             //if rightmost cell is further away than left most -> move right
             //the idea is that this maximizes the perception -> packets/destinations should be discovered quicker
             //NOTE: it is important to prioritise moves by swapping with counterpart, not by placing the move first. This causes the agent to be stuck in places such as 'tight hallways'. TODO: draw diagram of this scenario
@@ -73,6 +77,29 @@ public class Wander extends Behavior {
             }
         }
 
+        if (optimization3) {
+            moves = recentlyVisited(moves, agentState);
+        }
+
+
+
+
+        // Check for viable moves
+        for (var move : moves) {
+            var perception = agentState.getPerception();
+            int x = move.getX();
+            int y = move.getY();
+
+            // If the area is null, it is outside the bounds of the environment
+            //  (when the agent is at any edge for example some moves are not possible)
+            if (perception.getCellPerceptionOnRelPos(x, y) != null && perception.getCellPerceptionOnRelPos(x, y).isWalkable()) {
+                agentAction.step(agentState.getX() + x, agentState.getY() + y);
+                return;
+            }
+        }
+    }
+
+    private List<Coordinate> recentlyVisited(List<Coordinate> moves, AgentState agentState) {
         //remove recently visited from moves
         if (agentState.getMemoryFragment("recentlyVisited") != null) {
             for (String prevRecentlyVisited : agentState.getMemoryFragment("recentlyVisited").split("-")) {
@@ -91,26 +118,13 @@ public class Wander extends Behavior {
         String prevRecentlyVisited = agentState.getMemoryFragment("recentlyVisited");
         ArrayList<String> prevRecentlyVisitedList;
         if (prevRecentlyVisited != null) {
-           prevRecentlyVisitedList = new ArrayList<>(Arrays.asList(prevRecentlyVisited.split("-")));
+            prevRecentlyVisitedList = new ArrayList<>(Arrays.asList(prevRecentlyVisited.split("-")));
         } else prevRecentlyVisitedList = new ArrayList<>();
 
         if (prevRecentlyVisitedList.size() >= nbLocationsToRemember) prevRecentlyVisitedList.remove(0);
         prevRecentlyVisitedList.add(agentState.getX() + ";" + agentState.getY());
         agentState.addMemoryFragment("recentlyVisited", String.join("-", prevRecentlyVisitedList));
 
-
-        // Check for viable moves
-        for (var move : moves) {
-            var perception = agentState.getPerception();
-            int x = move.getX();
-            int y = move.getY();
-
-            // If the area is null, it is outside the bounds of the environment
-            //  (when the agent is at any edge for example some moves are not possible)
-            if (perception.getCellPerceptionOnRelPos(x, y) != null && perception.getCellPerceptionOnRelPos(x, y).isWalkable()) {
-                agentAction.step(agentState.getX() + x, agentState.getY() + y);
-                return;
-            }
-        }
+        return moves;
     }
 }
