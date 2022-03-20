@@ -10,6 +10,7 @@ import environment.Perception;
 import environment.world.destination.DestinationRep;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,6 +72,32 @@ public class Wander extends Behavior {
                 Collections.swap(moves, moves.indexOf(new Coordinate(0, 1)), moves.indexOf(new Coordinate(0, -1))); //prioritise up
             }
         }
+
+        //remove recently visited from moves
+        if (agentState.getMemoryFragment("recentlyVisited") != null) {
+            for (String prevRecentlyVisited : agentState.getMemoryFragment("recentlyVisited").split("-")) {
+                String prev_x = prevRecentlyVisited.split(";")[0];
+                String prev_y = prevRecentlyVisited.split(";")[1];
+                Coordinate diff = new Coordinate(Integer.parseInt(prev_x), Integer.parseInt(prev_y)).diff(new Coordinate(agentState.getX(), agentState.getY()));
+                if (moves.contains(diff)) { //dont just remove moves, this can cause an agent to get stuck
+                    moves.remove(diff);
+                    moves.add(moves.size(), diff);
+                }
+            }
+        }
+
+        int nbLocationsToRemember = 4;
+        //store current location to recentlyvisited
+        String prevRecentlyVisited = agentState.getMemoryFragment("recentlyVisited");
+        ArrayList<String> prevRecentlyVisitedList;
+        if (prevRecentlyVisited != null) {
+           prevRecentlyVisitedList = new ArrayList<>(Arrays.asList(prevRecentlyVisited.split("-")));
+        } else prevRecentlyVisitedList = new ArrayList<>();
+
+        if (prevRecentlyVisitedList.size() >= nbLocationsToRemember) prevRecentlyVisitedList.remove(0);
+        prevRecentlyVisitedList.add(agentState.getX() + ";" + agentState.getY());
+        agentState.addMemoryFragment("recentlyVisited", String.join("-", prevRecentlyVisitedList));
+
 
         // Check for viable moves
         for (var move : moves) {
