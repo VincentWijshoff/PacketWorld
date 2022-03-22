@@ -51,8 +51,10 @@ public class MoveTo extends Behavior {
         // first add all walls as nodes
         ArrayList<Node> nodeList = new ArrayList<>();
         for(String posStr: agentState.getMemoryFragment("walls").split("-")){
-            String[] pos = posStr.split(";");
-            nodeList.add(new Node(Integer.parseInt(pos[0]), Integer.parseInt(pos[1])));
+            if (posStr != "") {
+                String[] pos = posStr.split(";");
+                nodeList.add(new Node(Integer.parseInt(pos[0]), Integer.parseInt(pos[1])));
+            }
         }
         // now get the next best position from the optimal path
         int[] bestPos = getBestNextMove(agentState.getX(), agentState.getY(), i, j, nodeList, agentState);

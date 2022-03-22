@@ -124,17 +124,19 @@ public class Basic{
         if(agentState.getMemoryFragment("walls") != null){
             String[] wallPos = agentState.getMemoryFragment("walls").split("-");
             for (String wallP : wallPos) {
-                String[] wp = wallP.split(";");
-                // dont add when already in list
-                boolean inList = false;
-                for (Node n : fullWallList) {
-                    if(n.x == Integer.parseInt(wp[0]) && n.y == Integer.parseInt(wp[1])){
-                        inList = true;
-                        break;
+                if (wallP != "") {
+                    String[] wp = wallP.split(";");
+                    // dont add when already in list
+                    boolean inList = false;
+                    for (Node n : fullWallList) {
+                        if(n.x == Integer.parseInt(wp[0]) && n.y == Integer.parseInt(wp[1])){
+                            inList = true;
+                            break;
+                        }
                     }
-                }
-                if(!inList){
-                    fullWallList.add(new Node(Integer.parseInt(wp[0]), Integer.parseInt(wp[1])));
+                    if(!inList){
+                        fullWallList.add(new Node(Integer.parseInt(wp[0]), Integer.parseInt(wp[1])));
+                    }
                 }
             }
         }
@@ -154,14 +156,21 @@ public class Basic{
         // and finally we add both to memory
         StringBuilder wallMem = new StringBuilder();
         StringBuilder airMem = new StringBuilder();
-        for (Node wall : fullWallList) {
-            wallMem.append("-").append(wall.x).append(";").append(wall.y);
+
+        if (fullWallList.size() > 0) {
+            for (Node wall : fullWallList) {
+                wallMem.append("-").append(wall.x).append(";").append(wall.y);
+            }
+            wallMem.deleteCharAt(0);
         }
-        for (Node air : fullAirList) {
-            airMem.append("-").append(air.x).append(";").append(air.y);
+
+        if (fullAirList.size() > 0) {
+            for (Node air : fullAirList) {
+                airMem.append("-").append(air.x).append(";").append(air.y);
+            }
+            airMem.deleteCharAt(0);
         }
-        wallMem.deleteCharAt(0);
-        airMem.deleteCharAt(0);
+
         agentState.addMemoryFragment("walls", wallMem.toString());
         agentState.addMemoryFragment("air", airMem.toString());
     }
