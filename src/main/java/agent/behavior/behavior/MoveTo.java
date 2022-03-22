@@ -31,10 +31,9 @@ public class MoveTo extends Behavior {
         // also here store walls and destinations
         if(optimization2){
             storeDestinations(agentState);
-        }
-        if(optimization4){
             storeWalls(agentState);
         }
+
         this.x = Integer.parseInt(agentState.getMemoryFragment("x"));
         this.y = Integer.parseInt(agentState.getMemoryFragment("y"));
         this.moveTo(this.x, this.y, agentState, agentAction);

@@ -14,9 +14,8 @@ import environment.world.destination.DestinationRep;
 public class Basic{
 
     public static boolean optimization1 = true; // move away from walls
-    public static boolean optimization2 = true; // store destination locations
+    public static boolean optimization2 = true; // store destination locations, walls and pathfinder
     public static boolean optimization3 = true; // don't go back to recently visited positions
-    public static boolean optimization4 = true; // store walls
 
     /**
      * Finds all CellPerceptions in the view that are of a given type.

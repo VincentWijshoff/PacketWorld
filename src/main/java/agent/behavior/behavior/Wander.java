@@ -28,10 +28,9 @@ public class Wander extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         if (optimization2) {
             storeDestinations(agentState);
-        }
-        if (optimization4){
             storeWalls(agentState);
         }
+
         this.walkRandom(agentState, agentAction);
     }
 
