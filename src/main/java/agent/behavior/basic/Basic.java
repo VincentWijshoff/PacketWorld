@@ -253,7 +253,13 @@ public class Basic{
                         }
                         // check if it is actually walkable (if we can see it)
                         if(agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY()) == null){
-                            return true;
+                            // cannot see this position
+                            // we need a check for the edges off the world
+                            // only if the new position is 1 away from the current position, otherwise dont care
+                            return Math.abs(move.getX() - agentState.getX()) > 1 ||
+                                    Math.abs(move.getY() - agentState.getY()) > 1;
+                            // False = cannot walk here so may not be an option
+                            // True = cannot see this and not an option for next move because > 1 away, so assume is walkable
                         }
                         if(!Objects.requireNonNull(agentState.getPerception().
                                 getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable()){
@@ -269,7 +275,7 @@ public class Basic{
                 newAddition.pathLength = n.pathLength+1;
                 options.add(newAddition);
             }
-            // check if another endpoint exists
+            // check if another endpoint exists on the same position, but closer to the destination
             for (Node prevNode : newEndPoints) {
                 options.removeIf(newNode -> newNode.x == prevNode.x && newNode.y == prevNode.y);
             }
