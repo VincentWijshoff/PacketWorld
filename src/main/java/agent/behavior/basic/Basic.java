@@ -13,9 +13,9 @@ import environment.world.destination.DestinationRep;
 
 public class Basic{
 
-    public static boolean optimization1 = false; // move away from walls
+    public static boolean optimization1 = true; // move away from walls
     public static boolean optimization2 = true; // store destination locations
-    public static boolean optimization3 = false; // don't go back to recently visited positions
+    public static boolean optimization3 = true; // don't go back to recently visited positions
     public static boolean optimization4 = true; // store walls
 
     /**
@@ -196,10 +196,6 @@ public class Basic{
         while(foundFinnish(endPoints, xDest, yDest) == null){
             // we will expand each endpoint
             endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest);
-            System.out.println("new iteration");
-            for (Node n : endPoints) {
-                System.out.println("" + n.x + " " + n.y);
-            }
             visitedDest.addAll(endPoints);
         }
         Node finnish = foundFinnish(endPoints, xDest, yDest);

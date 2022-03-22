@@ -58,7 +58,6 @@ public class MoveTo extends Behavior {
         }
         // now get the next best position from the optimal path
         int[] bestPos = getBestNextMove(agentState.getX(), agentState.getY(), i, j, nodeList, agentState);
-        System.out.println(Arrays.toString(bestPos));
         agentAction.step(bestPos[0], bestPos[1]);
     }
 
