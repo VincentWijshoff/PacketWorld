@@ -4,17 +4,19 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import agent.behavior.basic.Basic;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
+import environment.world.wall.WallRep;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static agent.behavior.basic.Basic.findOfType;
+import static agent.behavior.basic.Basic.*;
 
 public class Wander extends Behavior {
     @Override
@@ -22,26 +24,15 @@ public class Wander extends Behavior {
 
     }
 
-    public boolean optimization1 = true;
-    public boolean optimization2 = false;
-    public boolean optimization3 = true;
-
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        if (optimization2 && agentState.seesDestination()) {
-            this.storeDestinations(agentState, agentAction);
+        if (optimization2) {
+            storeDestinations(agentState);
+        }
+        if (optimization4){
+            storeWalls(agentState);
         }
         this.walkRandom(agentState, agentAction);
-    }
-
-    //Store any destinations currently in vision in memory
-    private void storeDestinations(AgentState agentState, AgentAction agentAction) {
-        List<CellPerception> Dests = findOfType(DestinationRep.class, agentState);
-        for (CellPerception dest: Dests) {
-            DestinationRep destRep = dest.getRepOfType(DestinationRep.class);
-            String data = destRep.getX() + ";" + destRep.getY();
-            agentState.addMemoryFragment(destRep.getColor().toString(), data);
-        }
     }
 
     private void walkRandom(AgentState agentState, AgentAction agentAction) {

@@ -39,9 +39,24 @@ public class SeesGoal extends BehaviorChange {
             getAgentState().addMemoryFragment("y", Integer.toString(closestDest.getY()));
         } else if (remembersDestination) {
             String mem = getAgentState().getMemoryFragment(getAgentState().getCarry().get().getColor().toString());
-            String location[] = mem.split(";");
-            getAgentState().addMemoryFragment("x", location[0]);
-            getAgentState().addMemoryFragment("y", location[1]);
+            // this is a list of locations looking like this:
+            // x1;y1-x2;y2-x3;y3
+            // we need to find the closest destination
+            String[] locations = mem.split("-");
+            double closestDist = Double.POSITIVE_INFINITY;
+            String[] closestPoint = new String[0];
+            for (String location : locations) {
+                String[] point = location.split(";");
+                double dist = Math.abs(getAgentState().getX() - Integer.parseInt(point[0])) +
+                        Math.abs(getAgentState().getY() - Integer.parseInt(point[1]));
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestPoint = point;
+                }
+            }
+            // and save the shortest distance in memory
+            getAgentState().addMemoryFragment("x", closestPoint[0]);
+            getAgentState().addMemoryFragment("y", closestPoint[1]);
         }
     }
 
