@@ -24,17 +24,17 @@ nbArgs 0                            # 0 arguments required for the constructor
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 7
+nbChanges 8
 
 agent.behavior.behaviorChange.CanPickup
 nbArgs 0
-priority 0
+priority 1
 source 2        # MoveTo
 target 3        # PickupPacket
 
 agent.behavior.behaviorChange.CanRelease
 nbArgs 0
-priority 0
+priority 1
 source 2        # MoveTo
 target 4        # ReleasePacket
 
@@ -60,6 +60,12 @@ agent.behavior.behaviorChange.NoGoal
 nbArgs 0
 priority 0
 source 4        # ReleasePacket
+target 1        # Wander
+
+agent.behavior.behaviorChange.ArrivedOnEmpty
+nbArgs 0
+priority 0
+source 2        # MoveTo
 target 1        # Wander
 
 agent.behavior.behaviorChange.SeesGoal
