@@ -1,6 +1,5 @@
 package agent.behavior.basic;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
 
@@ -57,31 +56,27 @@ public class Basic{
     }
 
     public static void storeDestinations(AgentState agentState) {
-        if(!agentState.seesDestination()) return;
-        List<CellPerception> Dests = findOfType(DestinationRep.class, agentState);
-        for (CellPerception dest: Dests) {
+        if (!agentState.seesDestination()) return;
+        List<CellPerception> dests = findOfType(DestinationRep.class, agentState);
+        for (CellPerception dest : dests) {
             DestinationRep destRep = dest.getRepOfType(DestinationRep.class);
             String data = destRep.getX() + ";" + destRep.getY();
-            if(agentState.getMemoryFragment(destRep.getColor().toString()) != null){
+            if (agentState.getMemoryFragment(destRep.getColor().toString()) != null) {
                 // now we need to check if the destination was not already stored in memory
                 String mem = agentState.getMemoryFragment(destRep.getColor().toString());
                 String[] destinations = mem.split("-");
                 for (String destination : destinations) {
-                    if (data.equals(destination)) {
-                        // already in memory
-                        return;
-                    }
+                    if (data.equals(destination)) return; // already in memory
                 }
                 // not in memory
-                agentState.addMemoryFragment(destRep.getColor().toString(), mem+"-"+data);
-            }else {
+                agentState.addMemoryFragment(destRep.getColor().toString(), mem + "-" + data);
+            } else {
                 agentState.addMemoryFragment(destRep.getColor().toString(), data);
             }
         }
     }
 
     public static void storeWalls(AgentState agentState) {
-        // walls are difficult to see, because they are not represented in the agents vision
         // Get all in view range
         CellPerception[][] fullArea = getViewArea(agentState);
 
@@ -90,68 +85,30 @@ public class Basic{
         List<Node> fullAirList = new ArrayList<>();
         for (int i = 0; i < fullArea.length; i++) {
             for (int j = 0; j < fullArea[i].length; j++) {
-                if(fullArea[i][j] == null || fullArea[i][j].containsWall()){
-                    fullWallList.add(new Node(i + agentState.getPerception().getOffsetX()
-                            , j + agentState.getPerception().getOffsetY()));
-                }
-                else{
-                    fullAirList.add(new Node(i + agentState.getPerception().getOffsetX()
-                            , j + agentState.getPerception().getOffsetY()));
-                }
+                Node node = new Node(i + agentState.getPerception().getOffsetX()
+                        , j + agentState.getPerception().getOffsetY());
+
+                if(fullArea[i][j] == null || fullArea[i][j].containsWall()) fullWallList.add(node);
+                else fullAirList.add(node);
             }
         }
-        // we filter out the walls that are in memory as air
-        // first get all air blocks in list
-        if(agentState.getMemoryFragment("air") != null){
-            String[] airPos = agentState.getMemoryFragment("air").split("-");
-            for (String airP : airPos) {
-                String[] ap = airP.split(";");
-                // dont add when already in list
-                boolean inList = false;
-                for (Node n : fullAirList) {
-                    if(n.x == Integer.parseInt(ap[0]) && n.y == Integer.parseInt(ap[1])){
-                        inList = true;
-                        break;
-                    }
-                }
-                if(!inList){
-                    fullAirList.add(new Node(Integer.parseInt(ap[0]), Integer.parseInt(ap[1])));
-                }
-            }
-        }
-        // then all wall blocks in list
-        if(agentState.getMemoryFragment("walls") != null){
-            String[] wallPos = agentState.getMemoryFragment("walls").split("-");
-            for (String wallP : wallPos) {
-                if (wallP != "") {
-                    String[] wp = wallP.split(";");
-                    // dont add when already in list
-                    boolean inList = false;
-                    for (Node n : fullWallList) {
-                        if(n.x == Integer.parseInt(wp[0]) && n.y == Integer.parseInt(wp[1])){
-                            inList = true;
-                            break;
-                        }
-                    }
-                    if(!inList){
-                        fullWallList.add(new Node(Integer.parseInt(wp[0]), Integer.parseInt(wp[1])));
-                    }
-                }
-            }
-        }
+
+        // Add previously stored Air and Walls to lists
+        addStoredToList(fullAirList, "air", agentState);
+        addStoredToList(fullWallList, "walls", agentState);
+
         // now we check wall list against air list
         ArrayList<Node> toRemove = new ArrayList<>();
         for (Node wall : fullWallList) {
             for (Node air : fullAirList) {
-                if(wall.x == air.x && wall.y == air.y){
+                if (wall.x == air.x && wall.y == air.y) {
                     // this is definitely not a wall
                     toRemove.add(wall);
                 }
             }
         }
-        for (Node n : toRemove) {
-            fullWallList.remove(n);
-        }
+        for (Node n : toRemove) fullWallList.remove(n);
+
         // and finally we add both to memory
         StringBuilder wallMem = new StringBuilder();
         StringBuilder airMem = new StringBuilder();
@@ -174,31 +131,56 @@ public class Basic{
         agentState.addMemoryFragment("air", airMem.toString());
     }
 
+    /**
+     * Adds stored positions in the agent's memory to the given list.
+     * @param listOfNodes The list to add the stored positions to.
+     * @param memoryKey The type of cells to look for in memory.
+     * @param agentState The agent state
+     */
+    private static void addStoredToList(List<Node> listOfNodes, String memoryKey, AgentState agentState) {
+        if (agentState.getMemoryFragment(memoryKey) == null) return;
+
+        String[] allStored = agentState.getMemoryFragment(memoryKey).split("-");
+        for (String storedPos : allStored) {
+            if (storedPos.length() == 0) continue;
+
+            String[] pos = storedPos.split(";");
+            // Don't add when pos is already in list
+            boolean inList = false;
+            for (Node n : listOfNodes) {
+                if (n.x == Integer.parseInt(pos[0]) && n.y == Integer.parseInt(pos[1])) {
+                    inList = true;
+                    break;
+                }
+            }
+            if (!inList) listOfNodes.add(new Node(Integer.parseInt(pos[0]), Integer.parseInt(pos[1])));
+        }
+    }
+
     public static class Node {
-        public int x;
-        public int y;
+        public int x, y;
         public Node prev = null;
         public int pathLength = 0;
 
-        public Node(int x, int y){
+        public Node(int x, int y) {
             this.x = x;
             this.y = y;
         }
     }
 
-    public static int[] getBestNextMove(int x, int y, int xDest, int yDest, ArrayList<Node> wallList, AgentState agentState){
+    public static int[] getBestNextMove(int x, int y, int xDest, int yDest, ArrayList<Node> wallList, AgentState agentState) {
         ArrayList<Node> visitedDest = new ArrayList<>();
         visitedDest.add(new Node(x, y));
         ArrayList<Node> endPoints = new ArrayList<>();
         endPoints.add(new Node(x, y));
         // im trying to do basic bread first search which will give the shortest path to the destination
-        while(foundFinnish(endPoints, xDest, yDest) == null){
+        while (foundFinnish(endPoints, xDest, yDest) == null) {
             // we will expand each endpoint
             endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest);
             visitedDest.addAll(endPoints);
         }
         Node finnish = foundFinnish(endPoints, xDest, yDest);
-        while(finnish != null && finnish.prev != null && finnish.prev.prev != null){
+        while (finnish != null && finnish.prev != null && finnish.prev.prev != null) {
             finnish = finnish.prev;
         }
 
@@ -208,9 +190,7 @@ public class Basic{
 
     private static Node foundFinnish(List<Node> endPoints, int xDest, int yDest) {
         for (Node n : endPoints) {
-            if(n.x == xDest && n.y == yDest){
-                return n;
-            }
+            if (n.x == xDest && n.y == yDest) return n;
         }
         return null;
     }
@@ -235,28 +215,20 @@ public class Basic{
                     // Filter impossible moves away
                     .filter(move -> {
                         // if it is the required destination return it
-                        if(xDest == move.getX() && yDest == move.getY()){
-                            return true;
-                        }
+                        if (xDest == move.getX() && yDest == move.getY()) return true;
                         // walls
                         for (Node n2 : wallList) {
-                            if(n2.x == move.getX() && n2.y == move.getY()){
-                                return false;
-                            }
+                            if (n2.x == move.getX() && n2.y == move.getY()) return false;
                         }
                         // already been there
                         for (Node n2 : visitedDest) {
-                            if(n2.x == move.getX() && n2.y == move.getY()){
-                                return false;
-                            }
+                            if (n2.x == move.getX() && n2.y == move.getY()) return false;
                         }
                         // negative positions
+                        if (move.getX() < 0 || move.getY() < 0) return false;
 
-                        if(move.getX() < 0 || move.getY() < 0){
-                           return false;
-                        }
                         // check if it is actually walkable (if we can see it)
-                        if(agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY()) == null){
+                        if (agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY()) == null) {
                             // cannot see this position
                             // we need a check for the edges off the world
                             // only if the new position is 1 away from the current position, otherwise dont care
@@ -265,10 +237,9 @@ public class Basic{
                             // False = cannot walk here so may not be an option
                             // True = cannot see this and not an option for next move because > 1 away, so assume is walkable
                         }
-                        if(!Objects.requireNonNull(agentState.getPerception().
-                                getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable()){
-                            return false;
-                        }
+                        if (!Objects.requireNonNull(agentState.getPerception().
+                                getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable()) return false;
+
                         return true;
                     }).toList();
             // make them all into nodes

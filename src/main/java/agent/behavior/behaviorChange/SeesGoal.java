@@ -14,7 +14,7 @@ public class SeesGoal extends BehaviorChange {
 
     private boolean seesDestination, seesPacket, remembersDestination;
 
-    public SeesGoal(){
+    public SeesGoal() {
         this.seesPacket = false;
         this.seesDestination = false;
     }
@@ -24,12 +24,12 @@ public class SeesGoal extends BehaviorChange {
         this.seesPacket = !getAgentState().hasCarry() && getAgentState().seesPacket();
         this.seesDestination = getAgentState().hasCarry() && getAgentState().seesDestination(getAgentState().getCarry().get().getColor());
         this.remembersDestination = getAgentState().hasCarry() && getAgentState().getMemoryFragment(getAgentState().getCarry().get().getColor().toString()) != null;
-        if(seesPacket){
+        if (seesPacket) {
             List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
-            CellPerception closestPacket = closePackets.stream().findFirst().orElse(null);
+            CellPerception closestPacket = closePackets.get(0);
             getAgentState().addMemoryFragment("x", Integer.toString(closestPacket.getX()));
             getAgentState().addMemoryFragment("y", Integer.toString(closestPacket.getY()));
-        }else if(seesDestination) {
+        } else if (seesDestination) {
             Color packetColor = getAgentState().getCarry().get().getColor();
             List<CellPerception> closeDests = findOfType(DestinationRep.class, getAgentState());
             CellPerception closestDest = closeDests.stream()
