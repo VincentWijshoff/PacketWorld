@@ -90,7 +90,7 @@ public class Basic{
         List<Node> fullAirList = new ArrayList<>();
         for (int i = 0; i < fullArea.length; i++) {
             for (int j = 0; j < fullArea[i].length; j++) {
-                if(fullArea[i][j] == null){
+                if(fullArea[i][j] == null || fullArea[i][j].containsWall()){
                     fullWallList.add(new Node(i + agentState.getPerception().getOffsetX()
                             , j + agentState.getPerception().getOffsetY()));
                 }
