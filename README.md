@@ -54,3 +54,22 @@ Lastly, if you want to adhere to the coding style of the project, you can run th
 simply choose the _environment editor_ in the main menu of the application to edit or create new environments.
 - After (or during) a normal run, you can export the monitored actions of agents in your run together with some metadata about the run. Navigate to the _Actions_ window and click on the _export_ button. For batch runs this is done automatically by specifying the output file before starting the runs.
 
+
+## Solution description
+
+The agent is able to store the locations of seen walls and destinations in its memory. It uses this knowledge to calculate the best direction to move to. For example, to go towards a previously discovered destination out of view while carrying a packet.
+
+### Behavior
+- `MoveTo` makes the agent move to a specified position in the Packet-World. The agent calculates the best move based on the its current position, the steps it can take and its memory to include walls it might encounter.
+- `PickupPacket` lets the agent pick up a packet and `ReleasePacket` puts it down again.
+- `Wander` is the default behavior, often the result of not knowing where to go next. The agent walks around in random directions.
+
+### BehaviorChange
+- `ArrivedOnEmpty` happens when an agent reaches the tile it was moving to, but there is nothing there. Can happen when going for a packet and another agent picks it up before arriving.
+- `CanPickup` is a check that makes sure agents only pick up packets when they are able to. `CanRelease` is similar.
+- `NoGoal` happens when an agent doesn't know where to go next and results in wandering behavior. `SeesGoal` is the opposite.
+
+
+
+
+
