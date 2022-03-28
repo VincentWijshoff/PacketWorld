@@ -69,7 +69,8 @@ The agent is able to store the locations of seen walls and destinations in its m
 - `CanPickup` is a check that makes sure agents only pick up packets when they are able to. `CanRelease` is similar.
 - `NoGoal` happens when an agent doesn't know where to go next and results in wandering behavior. `SeesGoal` is the opposite.
 
-
+### Optimizations
+The optimizations are currently static booleans which can be toggled in `agent.behavior.basic.Basic`.
 
 
 

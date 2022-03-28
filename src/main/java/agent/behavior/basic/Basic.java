@@ -41,6 +41,11 @@ public class Basic{
         return fullAreaList;
     }
 
+    /**
+     * Gets all the cells the agent can currently observe.
+     * @param agentState The agent
+     * @return 2D CellPerception array relative to the agent's position.
+     */
     private static CellPerception[][] getViewArea(AgentState agentState) {
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
         int left = agentState.getPerception().getOffsetX() - agentState.getX();
@@ -55,10 +60,15 @@ public class Basic{
         return perceptionList;
     }
 
+    /**
+     * Stores all destinations in view into the agent's memory.
+     * @param agentState The agent seeing and storing destinations.
+     * @note Destinations that are already in memory are ignored to avoid duplicates.
+     */
     public static void storeDestinations(AgentState agentState) {
         if (!agentState.seesDestination()) return;
         List<CellPerception> dests = findOfType(DestinationRep.class, agentState);
-        for (CellPerception dest : dests) {
+        DESTS: for (CellPerception dest : dests) {
             DestinationRep destRep = dest.getRepOfType(DestinationRep.class);
             String data = destRep.getX() + ";" + destRep.getY();
             if (agentState.getMemoryFragment(destRep.getColor().toString()) != null) {
@@ -66,7 +76,7 @@ public class Basic{
                 String mem = agentState.getMemoryFragment(destRep.getColor().toString());
                 String[] destinations = mem.split("-");
                 for (String destination : destinations) {
-                    if (data.equals(destination)) return; // already in memory
+                    if (data.equals(destination)) continue DESTS; // already in memory
                 }
                 // not in memory
                 agentState.addMemoryFragment(destRep.getColor().toString(), mem + "-" + data);
@@ -76,6 +86,11 @@ public class Basic{
         }
     }
 
+    /**
+     * Stores all walls in view into the agent's memory.
+     * @param agentState The agent seeing and storing walls.
+     * @note Walls that are already in memory are ignored to avoid duplicates.
+     */
     public static void storeWalls(AgentState agentState) {
         // Get all in view range
         CellPerception[][] fullArea = getViewArea(agentState);
@@ -157,6 +172,7 @@ public class Basic{
         }
     }
 
+    // Helper class for breadth-first optimal path search.
     public static class Node {
         public int x, y;
         public Node prev = null;
@@ -173,7 +189,7 @@ public class Basic{
         visitedDest.add(new Node(x, y));
         ArrayList<Node> endPoints = new ArrayList<>();
         endPoints.add(new Node(x, y));
-        // im trying to do basic bread first search which will give the shortest path to the destination
+        // Basic breadth-first search which will give the shortest path to the destination
         while (foundFinnish(endPoints, xDest, yDest) == null) {
             // we will expand each endpoint
             endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest);
