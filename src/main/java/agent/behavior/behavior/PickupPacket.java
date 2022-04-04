@@ -9,12 +9,13 @@ import environment.world.packet.PacketRep;
 
 import java.util.List;
 
+import static agent.behavior.basic.Basic.communicateInfo;
 import static agent.behavior.basic.Basic.findOfType;
 
 public class PickupPacket extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-
+        communicateInfo(agentState, agentCommunication);
     }
 
     @Override

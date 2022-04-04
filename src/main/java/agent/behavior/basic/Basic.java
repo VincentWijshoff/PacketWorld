@@ -3,11 +3,9 @@ package agent.behavior.basic;
 import java.util.*;
 import java.util.List;
 
+import agent.AgentCommunication;
 import agent.AgentState;
-import environment.CellPerception;
-import environment.Coordinate;
-import environment.Perception;
-import environment.Representation;
+import environment.*;
 import environment.world.destination.DestinationRep;
 import environment.world.energystation.EnergyStationRep;
 
@@ -16,6 +14,49 @@ public class Basic{
     public static boolean optimization1 = true; // move away from walls
     public static boolean optimization2 = true; // store destination locations, walls and pathfinder
     public static boolean optimization3 = true; // don't go back to recently visited positions
+
+    public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
+        Collection<Mail> messages = agentCommunication.getMessages();
+        agentCommunication.clearMessages();
+        // messages have the following structure: TYPE=DATA
+        for (Mail m : messages) {
+            String[] info = m.getMessage().split("=");
+            String knownData = agentState.getMemoryFragment(info[0]);
+            if(knownData == null){
+                agentState.addMemoryFragment(info[0], info[1]);
+                continue;
+            }
+            List<Node> knownNodes = new ArrayList<>();
+            List<Node> receivedNodes = new ArrayList<>();
+            for (String knownPoint : knownData.split("-")) {
+                knownNodes.add(new Node(Integer.parseInt(knownPoint.split(";")[0]), Integer.parseInt(knownPoint.split(";")[1])));
+            }
+            for (String recPoint : info[1].split("-")) {
+                receivedNodes.add(new Node(Integer.parseInt(recPoint.split(";")[0]), Integer.parseInt(recPoint.split(";")[1])));
+            }
+            knownNodes.removeIf((node -> {
+                List<Node> copyOfRecNodes = receivedNodes.stream().toList();
+                copyOfRecNodes.removeIf(node1 -> node.x != node1.x || node.y != node1.y);
+                return !copyOfRecNodes.isEmpty();
+            }));
+            agentState.addMemoryFragment(info[0], encode(knownNodes) + "-" + encode(receivedNodes));
+        }
+        // now broadcast all known info
+        Set<String> keys = agentState.getMemoryFragmentKeys();
+        for (String key : keys) {
+            String message = key + "=" + agentState.getMemoryFragment(key);
+            agentCommunication.broadcastMessage(message);
+        }
+    }
+
+    private static String encode(List<Node> nodes) {
+        StringBuilder fin = new StringBuilder();
+        for (Node n : nodes) {
+            fin.append(n.x).append(";").append(n.y).append("-");
+        }
+        fin.deleteCharAt(fin.length()-1);
+        return fin.toString();
+    }
 
     /**
      * Finds all CellPerceptions in the view that are of a given type.

@@ -21,7 +21,7 @@ import static agent.behavior.basic.Basic.*;
 public class Wander extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-
+        communicateInfo(agentState, agentCommunication);
     }
 
     @Override

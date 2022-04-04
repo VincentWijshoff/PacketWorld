@@ -23,7 +23,7 @@ public class MoveTo extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-
+        communicateInfo(agentState, agentCommunication);
     }
 
     @Override
