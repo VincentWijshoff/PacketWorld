@@ -9,6 +9,7 @@ import environment.Coordinate;
 import environment.Perception;
 import environment.Representation;
 import environment.world.destination.DestinationRep;
+import environment.world.energystation.EnergyStationRep;
 
 public class Basic{
 
@@ -66,6 +67,7 @@ public class Basic{
      * @note Destinations that are already in memory are ignored to avoid duplicates.
      */
     public static void storeDestinations(AgentState agentState) {
+        storeChargingStations(agentState);
         if (!agentState.seesDestination()) return;
         List<CellPerception> dests = findOfType(DestinationRep.class, agentState);
         DESTS: for (CellPerception dest : dests) {
@@ -82,6 +84,26 @@ public class Basic{
                 agentState.addMemoryFragment(destRep.getColor().toString(), mem + "-" + data);
             } else {
                 agentState.addMemoryFragment(destRep.getColor().toString(), data);
+            }
+        }
+    }
+
+    public static void storeChargingStations(AgentState agentState){
+        List<CellPerception> dests = findOfType(EnergyStationRep.class, agentState);
+        DESTS: for (CellPerception dest : dests) {
+            EnergyStationRep destRep = dest.getRepOfType(EnergyStationRep.class);
+            String data = destRep.getX() + ";" + destRep.getY();
+            if (agentState.getMemoryFragment("chargers") != null) {
+                // now we need to check if the destination was not already stored in memory
+                String mem = agentState.getMemoryFragment("chargers");
+                String[] destinations = mem.split("-");
+                for (String destination : destinations) {
+                    if (data.equals(destination)) continue DESTS; // already in memory
+                }
+                // not in memory
+                agentState.addMemoryFragment("chargers", mem + "-" + data);
+            } else {
+                agentState.addMemoryFragment("chargers", data);
             }
         }
     }
