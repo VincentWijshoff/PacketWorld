@@ -9,7 +9,7 @@ import environment.*;
 import environment.world.destination.DestinationRep;
 import environment.world.energystation.EnergyStationRep;
 
-public class Basic{
+public class Basic {
 
     public static boolean optimization1 = true; // move away from walls
     public static boolean optimization2 = true; // store destination locations, walls and pathfinder
@@ -107,7 +107,7 @@ public class Basic{
      * @param agentState The agent seeing and storing destinations.
      * @note Destinations that are already in memory are ignored to avoid duplicates.
      */
-    public static void storeDestinations(AgentState agentState) {
+    /*public static void storeDestinations(AgentState agentState) {
         storeChargingStations(agentState);
         if (!agentState.seesDestination()) return;
         List<CellPerception> dests = findOfType(DestinationRep.class, agentState);
@@ -147,6 +147,15 @@ public class Basic{
                 agentState.addMemoryFragment("chargers", data);
             }
         }
+    }*/
+
+    public static void storeView(AgentState agentState) {
+        List<CellPerception> viewArea = new ArrayList<>();
+        for (CellPerception[] c1 : getViewArea(agentState)) {
+            for (CellPerception c2 : c1)
+                viewArea.add(c2);
+        }
+        Memory.add(agentState, viewArea);
     }
 
     /**
@@ -154,7 +163,7 @@ public class Basic{
      * @param agentState The agent seeing and storing walls.
      * @note Walls that are already in memory are ignored to avoid duplicates.
      */
-    public static void storeWalls(AgentState agentState) {
+    /*public static void storeWalls(AgentState agentState) {
         // Get all in view range
         CellPerception[][] fullArea = getViewArea(agentState);
 
@@ -207,7 +216,7 @@ public class Basic{
 
         agentState.addMemoryFragment("walls", wallMem.toString());
         agentState.addMemoryFragment("air", airMem.toString());
-    }
+    }*/
 
     /**
      * Adds stored positions in the agent's memory to the given list.

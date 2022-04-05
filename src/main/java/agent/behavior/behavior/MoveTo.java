@@ -29,9 +29,10 @@ public class MoveTo extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         // also here store walls and destinations
-        if(optimization2){
-            storeDestinations(agentState);
-            storeWalls(agentState);
+        if (optimization2) {
+            /*storeDestinations(agentState);
+            storeWalls(agentState);*/
+            storeView(agentState);
         }
 
         this.x = Integer.parseInt(agentState.getMemoryFragment("x"));
@@ -42,7 +43,7 @@ public class MoveTo extends Behavior {
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction) {
         // we need to find a path from the current position to the given destination keeping into account the walls
         // if no walls in memory, just take the next best step
-        if(agentState.getMemoryFragment("walls") == null){
+        if (agentState.getMemoryFragment("walls") == null) {
             moveToBestPosition(i, j, agentState, agentAction);
             return;
         }
