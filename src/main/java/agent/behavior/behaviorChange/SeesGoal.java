@@ -8,6 +8,7 @@ import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.energystation.EnergyStationRep;
 import environment.world.packet.PacketRep;
+import util.MyColor;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -43,13 +44,16 @@ public class SeesGoal extends BehaviorChange {
                     .findFirst().orElse(null);
             Memory.setTarget(getAgentState(), closestDest);
         } else if (remembersDestination) {
-            String mem = getAgentState().getMemoryFragment(getAgentState().getCarry().get().getColor().toString());
-            List<int[]> destLocations = Memory.destinations().getAllStoredPos(getAgentState());
+            List<String[]> destLocations = Memory.destinations().getAllStored(getAgentState())
+                    .stream()
+                    .filter(attributes -> MyColor.getName(getAgentState().getCarry().get().getColor()).equals(attributes[2]))
+                    .toList();
 
             // We need to find the closest destination
             double closestDist = Double.POSITIVE_INFINITY;
             int[] closestDestLoc = new int[]{};
-            for (int[] loc : destLocations) {
+            for (String[] attr : destLocations) {
+                int[] loc = new int[]{ Integer.parseInt(attr[0]), Integer.parseInt(attr[1]) };
                 double dist = Math.abs(getAgentState().getX() - loc[0]) + Math.abs(getAgentState().getY() - loc[1]);
                 if (dist < closestDist) {
                     closestDist = dist;

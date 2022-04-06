@@ -102,6 +102,7 @@ public class Basic {
     }
 
 
+    // Add all in-sight in memory
     public static void storeView(AgentState agentState) {
         List<CellPerception> viewArea = new ArrayList<>();
         for (CellPerception[] c1 : getViewArea(agentState)) {
@@ -110,6 +111,9 @@ public class Basic {
         }
         // Don't add agent itself to memory
         viewArea.remove(agentState.getPerception().getCellAt(agentState.getX(), agentState.getY()));
+        // Don't add null-cells
+        viewArea.removeAll(Collections.singleton(null));
+
         Memory.addAll(agentState, viewArea);
         // Memory.printMemory(agentState);
     }

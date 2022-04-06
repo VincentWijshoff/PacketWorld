@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
 
 public class Memory {
 
-    // The MemoryFragmentKey of the memory (MAX_MEMORY_FRAGMENTS = 10 in AgentImp)
+    // The MemoryFragmentKeys (MAX_MEMORY_FRAGMENTS = 10 in AgentImp)
     private enum MemKey {
         AIR,
         WALLS,
         CHARGERS,
         DESTINATIONS,
-        TARGET, // separate, not in map
+        TARGET, // kept separate, not in mem-map
         RECENTLY_VISITED, // optimization3
         DEFAULT, // Packets, other agents, ...
     }
@@ -29,8 +29,8 @@ public class Memory {
     public static MemoryFragment walls() { return mem.get(MemKey.WALLS); }
     public static MemoryFragment chargers() { return mem.get(MemKey.CHARGERS); }
     public static MemoryFragment destinations() { return mem.get(MemKey.DESTINATIONS); }
-    public static MemoryFragment defaults() { return mem.get(MemKey.DEFAULT); }
     public static MemoryFragment recentVisits() { return mem.get(MemKey.RECENTLY_VISITED); }
+    public static MemoryFragment defaults() { return mem.get(MemKey.DEFAULT); }
 
 
     // MemoryFragment specific functions
