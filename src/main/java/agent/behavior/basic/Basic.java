@@ -16,6 +16,12 @@ public class Basic{
     public static boolean optimization3 = true; // don't go back to recently visited positions
 
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
+        // broadcast all info
+        Set<String> keys = agentState.getMemoryFragmentKeys();
+        for (String key : keys) {
+            String message = key + "=" + agentState.getMemoryFragment(key);
+            agentCommunication.broadcastMessage(message);
+        }
         Collection<Mail> messages = agentCommunication.getMessages();
         agentCommunication.clearMessages();
         // messages have the following structure: TYPE=DATA
@@ -36,18 +42,14 @@ public class Basic{
                 receivedNodes.add(new Node(Integer.parseInt(recPoint.split(";")[0]), Integer.parseInt(recPoint.split(";")[1])));
             }
             knownNodes.removeIf((node -> {
-                List<Node> copyOfRecNodes = receivedNodes.stream().toList();
+                List<Node> copyOfRecNodes = new ArrayList<>(receivedNodes);
                 copyOfRecNodes.removeIf(node1 -> node.x != node1.x || node.y != node1.y);
                 return !copyOfRecNodes.isEmpty();
             }));
             agentState.addMemoryFragment(info[0], encode(knownNodes) + "-" + encode(receivedNodes));
         }
-        // now broadcast all known info
-        Set<String> keys = agentState.getMemoryFragmentKeys();
-        for (String key : keys) {
-            String message = key + "=" + agentState.getMemoryFragment(key);
-            agentCommunication.broadcastMessage(message);
-        }
+        System.out.println(agentState.getName());
+        System.out.println(agentState.getMemoryFragment("air"));
     }
 
     private static String encode(List<Node> nodes) {
