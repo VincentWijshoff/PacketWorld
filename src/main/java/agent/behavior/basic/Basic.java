@@ -21,6 +21,7 @@ public class Basic{
         // messages have the following structure: TYPE=DATA
         for (Mail m : messages) {
             String[] info = m.getMessage().split("=");
+            if(Objects.equals(info[0], "recentlyVisited") || Objects.equals(info[0], "x") || Objects.equals(info[0], "y")) continue;
             String knownData = agentState.getMemoryFragment(info[0]);
             if(knownData == null){
                 agentState.addMemoryFragment(info[0], info[1]);
