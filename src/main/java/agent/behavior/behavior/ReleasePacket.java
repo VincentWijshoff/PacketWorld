@@ -4,14 +4,11 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import environment.CellPerception;
-import environment.world.destination.DestinationRep;
+import agent.behavior.basic.Memory;
 
-import java.awt.*;
-import java.util.List;
+import java.util.Objects;
 
 import static agent.behavior.basic.Basic.communicateInfo;
-import static agent.behavior.basic.Basic.findOfType;
 
 public class ReleasePacket extends Behavior {
     @Override
@@ -24,8 +21,8 @@ public class ReleasePacket extends Behavior {
         this.releasePacket(agentState, agentAction);
     }
 
-    private void releasePacket(AgentState agentState, AgentAction agentAction){
-        agentAction.putPacket(Integer.parseInt(agentState.getMemoryFragment("x")),
-                Integer.parseInt(agentState.getMemoryFragment("y")));
+    private void releasePacket(AgentState agentState, AgentAction agentAction) {
+        int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
+        agentAction.putPacket(target[0], target[1]);
     }
 }

@@ -2,6 +2,7 @@ package agent.behavior.behaviorChange;
 
 import agent.behavior.BehaviorChange;
 import agent.behavior.basic.Basic;
+import agent.behavior.basic.Memory;
 import environment.CellPerception;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
@@ -27,56 +28,48 @@ public class SeesGoal extends BehaviorChange {
     public void updateChange() {
         this.seesPacket = !getAgentState().hasCarry() && getAgentState().seesPacket();
         this.seesDestination = getAgentState().hasCarry() && getAgentState().seesDestination(getAgentState().getCarry().get().getColor());
-        this.remembersDestination = getAgentState().hasCarry() && getAgentState().getMemoryFragment(getAgentState().getCarry().get().getColor().toString()) != null;
+        this.remembersDestination = getAgentState().hasCarry() && Memory.knowsDestOf(getAgentState(), getAgentState().getCarry().get().getColor());
         this.seesCharger = getAgentState().getBatteryState() < 20
-                && (!findOfType(EnergyStationRep.class, getAgentState()).isEmpty() || getAgentState().getMemoryFragment("chargers") != null);
+                && (!findOfType(EnergyStationRep.class, getAgentState()).isEmpty() || (!Memory.chargers().isEmpty(getAgentState())));
         if (seesPacket) {
             List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
             CellPerception closestPacket = closePackets.get(0);
-            getAgentState().addMemoryFragment("x", Integer.toString(closestPacket.getX()));
-            getAgentState().addMemoryFragment("y", Integer.toString(closestPacket.getY()));
+            Memory.setTarget(getAgentState(), closestPacket);
         } else if (seesDestination) {
             Color packetColor = getAgentState().getCarry().get().getColor();
             List<CellPerception> closeDests = findOfType(DestinationRep.class, getAgentState());
             CellPerception closestDest = closeDests.stream()
                     .filter(dest -> dest.containsDestination(packetColor))
                     .findFirst().orElse(null);
-            getAgentState().addMemoryFragment("x", Integer.toString(closestDest.getX()));
-            getAgentState().addMemoryFragment("y", Integer.toString(closestDest.getY()));
+            Memory.setTarget(getAgentState(), closestDest);
         } else if (remembersDestination) {
             String mem = getAgentState().getMemoryFragment(getAgentState().getCarry().get().getColor().toString());
-            // this is a list of locations looking like this:
-            // x1;y1-x2;y2-x3;y3
-            // we need to find the closest destination
-            String[] locations = mem.split("-");
+            List<int[]> destLocations = Memory.destinations().getAllStoredPos(getAgentState());
+
+            // We need to find the closest destination
             double closestDist = Double.POSITIVE_INFINITY;
-            String[] closestPoint = new String[0];
-            for (String location : locations) {
-                String[] point = location.split(";");
-                double dist = Math.abs(getAgentState().getX() - Integer.parseInt(point[0])) +
-                        Math.abs(getAgentState().getY() - Integer.parseInt(point[1]));
+            int[] closestDestLoc = new int[]{};
+            for (int[] loc : destLocations) {
+                double dist = Math.abs(getAgentState().getX() - loc[0]) + Math.abs(getAgentState().getY() - loc[1]);
                 if (dist < closestDist) {
                     closestDist = dist;
-                    closestPoint = point;
+                    closestDestLoc = loc;
                 }
             }
             // and save the shortest distance in memory
-            getAgentState().addMemoryFragment("x", closestPoint[0]);
-            getAgentState().addMemoryFragment("y", closestPoint[1]);
+            Memory.setTarget(getAgentState(), closestDestLoc);
         } else if (seesCharger){
             // needs charger and sees one
             if(!findOfType(EnergyStationRep.class, getAgentState()).isEmpty()){
                 // sees one (sorted list)
                 List<CellPerception> destlist = findOfType(EnergyStationRep.class, getAgentState());
-                getAgentState().addMemoryFragment("x", Integer.toString(destlist.get(0).getX()));
-                getAgentState().addMemoryFragment("y", Integer.toString(destlist.get(0).getY()));
+                Memory.setTarget(getAgentState(), destlist.get(0));
             }else{
                 // remembers one
-                String[] clst = getAgentState().getMemoryFragment("chargers").split("-");
                 List<Basic.Node> chargerlist = new ArrayList<>();
-                for (String s : clst) {
-                    chargerlist.add(new Basic.Node(Integer.parseInt(s.split(";")[0]),
-                            Integer.parseInt(s.split(";")[0])));
+                List<int[]> storedChargers = Memory.chargers().getAllStoredPos(getAgentState());
+                for (int[] pos : storedChargers) {
+                    chargerlist.add(new Basic.Node(pos[0], pos[1]));
                 }
                 // find closest one
                 chargerlist.sort((p1, p2) -> {
@@ -84,8 +77,7 @@ public class SeesGoal extends BehaviorChange {
                     double d2 = Perception.distance(getAgentState().getX(), getAgentState().getY(), p2.x, p2.y);
                     return Double.compare(d1, d2);
                 });
-                getAgentState().addMemoryFragment("x", Integer.toString(chargerlist.get(0).x));
-                getAgentState().addMemoryFragment("y", Integer.toString(chargerlist.get(0).y));
+                Memory.setTarget(getAgentState(), new int[]{ chargerlist.get(0).x, chargerlist.get(0).y });
             }
         }
     }

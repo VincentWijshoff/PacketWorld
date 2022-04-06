@@ -5,6 +5,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 import agent.behavior.basic.Basic;
+import agent.behavior.basic.Memory;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
@@ -27,8 +28,7 @@ public class Wander extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         if (optimization2) {
-            storeDestinations(agentState);
-            storeWalls(agentState);
+            storeView(agentState);
         }
 
         this.walkRandom(agentState, agentAction);
@@ -98,11 +98,9 @@ public class Wander extends Behavior {
 
     private List<Coordinate> recentlyVisited(List<Coordinate> moves, AgentState agentState) {
         //remove recently visited from moves
-        if (agentState.getMemoryFragment("recentlyVisited") != null) {
-            for (String prevRecentlyVisited : agentState.getMemoryFragment("recentlyVisited").split("-")) {
-                String prev_x = prevRecentlyVisited.split(";")[0];
-                String prev_y = prevRecentlyVisited.split(";")[1];
-                Coordinate diff = new Coordinate(Integer.parseInt(prev_x), Integer.parseInt(prev_y)).diff(new Coordinate(agentState.getX(), agentState.getY()));
+        if (!Memory.recentVisits().isEmpty(agentState)) {
+            for (int[] prevVisited : Memory.recentVisits().getAllStoredPos(agentState)) {
+                Coordinate diff = new Coordinate(prevVisited[0], prevVisited[1]).diff(new Coordinate(agentState.getX(), agentState.getY()));
                 if (moves.contains(diff)) { //dont just remove moves, this can cause an agent to get stuck
                     moves.remove(diff);
                     moves.add(moves.size(), diff);
@@ -111,17 +109,12 @@ public class Wander extends Behavior {
         }
 
         int nbLocationsToRemember = 4;
+        List<String[]> prevRecentlyVisitedList = Memory.recentVisits().getAllStored(agentState);
+
         //store current location to recentlyvisited
-        String prevRecentlyVisited = agentState.getMemoryFragment("recentlyVisited");
-        ArrayList<String> prevRecentlyVisitedList;
-        if (prevRecentlyVisited != null) {
-            prevRecentlyVisitedList = new ArrayList<>(Arrays.asList(prevRecentlyVisited.split("-")));
-        } else prevRecentlyVisitedList = new ArrayList<>();
-
         if (prevRecentlyVisitedList.size() >= nbLocationsToRemember) prevRecentlyVisitedList.remove(0);
-        prevRecentlyVisitedList.add(agentState.getX() + ";" + agentState.getY());
-        agentState.addMemoryFragment("recentlyVisited", String.join("-", prevRecentlyVisitedList));
-
+        prevRecentlyVisitedList.add(new String[]{ agentState.getX() + "", agentState.getY() + "" });
+        Memory.recentVisits().setAllStored(agentState, prevRecentlyVisitedList);
         return moves;
     }
 }

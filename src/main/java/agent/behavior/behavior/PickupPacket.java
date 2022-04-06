@@ -4,13 +4,11 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import environment.CellPerception;
-import environment.world.packet.PacketRep;
+import agent.behavior.basic.Memory;
 
-import java.util.List;
+import java.util.Objects;
 
 import static agent.behavior.basic.Basic.communicateInfo;
-import static agent.behavior.basic.Basic.findOfType;
 
 public class PickupPacket extends Behavior {
     @Override
@@ -20,7 +18,7 @@ public class PickupPacket extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        agentAction.pickPacket(Integer.parseInt(agentState.getMemoryFragment("x")),
-                Integer.parseInt(agentState.getMemoryFragment("y")));
+        int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
+        agentAction.pickPacket(target[0], target[1]);
     }
 }

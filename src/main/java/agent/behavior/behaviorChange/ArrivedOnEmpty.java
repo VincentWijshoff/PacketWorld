@@ -1,6 +1,9 @@
 package agent.behavior.behaviorChange;
 
 import agent.behavior.BehaviorChange;
+import agent.behavior.basic.Memory;
+
+import java.util.Objects;
 
 public class ArrivedOnEmpty extends BehaviorChange {
 
@@ -12,8 +15,8 @@ public class ArrivedOnEmpty extends BehaviorChange {
 
     @Override
     public void updateChange() {
-        this.arrived = Integer.parseInt(getAgentState().getMemoryFragment("x")) == getAgentState().getX()
-                    && Integer.parseInt(getAgentState().getMemoryFragment("y")) == getAgentState().getY();
+        int[] target = Objects.requireNonNull(Memory.getTarget(getAgentState()));
+        this.arrived = target[0] == getAgentState().getX() && target[1] == getAgentState().getY();
     }
 
     @Override

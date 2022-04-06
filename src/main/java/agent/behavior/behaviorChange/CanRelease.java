@@ -1,6 +1,9 @@
 package agent.behavior.behaviorChange;
 
 import agent.behavior.BehaviorChange;
+import agent.behavior.basic.Memory;
+
+import java.util.Objects;
 
 public class CanRelease extends BehaviorChange {
 
@@ -13,8 +16,9 @@ public class CanRelease extends BehaviorChange {
     public void updateChange() {
         this.agentX = getAgentState().getX();
         this.agentY = getAgentState().getY();
-        this.x = Integer.parseInt(getAgentState().getMemoryFragment("x"));
-        this.y = Integer.parseInt(getAgentState().getMemoryFragment("y"));
+        int[] target = Objects.requireNonNull(Memory.getTarget(getAgentState()));
+        this.x = target[0];
+        this.y = target[1];
     }
 
     @Override
