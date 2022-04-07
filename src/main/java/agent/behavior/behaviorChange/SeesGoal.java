@@ -66,36 +66,38 @@ public class SeesGoal extends BehaviorChange {
                 } else lowBattery = false;
             }
         }
-        else if (seesPacket) {
-            List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
-            CellPerception closestPacket = closePackets.get(0);
-            Memory.setTarget(getAgentState(), closestPacket);
-        } else if (seesDestination) {
-            Color packetColor = getAgentState().getCarry().get().getColor();
-            List<CellPerception> closeDests = findOfType(DestinationRep.class, getAgentState());
-            CellPerception closestDest = closeDests.stream()
-                    .filter(dest -> dest.containsDestination(packetColor))
-                    .findFirst().orElse(null);
-            Memory.setTarget(getAgentState(), closestDest);
-        } else if (remembersDestination) {
-            List<String[]> destLocations = Memory.destinations().getAllStored(getAgentState())
-                    .stream()
-                    .filter(attributes -> MyColor.getName(getAgentState().getCarry().get().getColor()).equals(attributes[2]))
-                    .toList();
+        if (!lowBattery) {
+            if (seesPacket) {
+                List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
+                CellPerception closestPacket = closePackets.get(0);
+                Memory.setTarget(getAgentState(), closestPacket);
+            } else if (seesDestination) {
+                Color packetColor = getAgentState().getCarry().get().getColor();
+                List<CellPerception> closeDests = findOfType(DestinationRep.class, getAgentState());
+                CellPerception closestDest = closeDests.stream()
+                        .filter(dest -> dest.containsDestination(packetColor))
+                        .findFirst().orElse(null);
+                Memory.setTarget(getAgentState(), closestDest);
+            } else if (remembersDestination) {
+                List<String[]> destLocations = Memory.destinations().getAllStored(getAgentState())
+                        .stream()
+                        .filter(attributes -> MyColor.getName(getAgentState().getCarry().get().getColor()).equals(attributes[2]))
+                        .toList();
 
-            // We need to find the closest destination
-            double closestDist = Double.POSITIVE_INFINITY;
-            int[] closestDestLoc = new int[]{};
-            for (String[] attr : destLocations) {
-                int[] loc = new int[]{ Integer.parseInt(attr[0]), Integer.parseInt(attr[1]) };
-                double dist = Math.abs(getAgentState().getX() - loc[0]) + Math.abs(getAgentState().getY() - loc[1]);
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestDestLoc = loc;
+                // We need to find the closest destination
+                double closestDist = Double.POSITIVE_INFINITY;
+                int[] closestDestLoc = new int[]{};
+                for (String[] attr : destLocations) {
+                    int[] loc = new int[]{ Integer.parseInt(attr[0]), Integer.parseInt(attr[1]) };
+                    double dist = Math.abs(getAgentState().getX() - loc[0]) + Math.abs(getAgentState().getY() - loc[1]);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestDestLoc = loc;
+                    }
                 }
+                // and save the shortest distance in memory
+                Memory.setTarget(getAgentState(), closestDestLoc);
             }
-            // and save the shortest distance in memory
-            Memory.setTarget(getAgentState(), closestDestLoc);
         }
     }
 

@@ -35,6 +35,7 @@ abstract public class BehaviorChange {
     public final boolean testChange() {
         if (this.isSatisfied() && this.behaviorState.getBehavior().preCondition(this.getAgentState())) {
             this.getAgentState().getCurrentBehavior().leave(this.getAgentState());
+            System.out.println(agentState.getName() + ": leaving behaviour " + this.getAgentState().getCurrentBehavior().toString() + " and entering " + behaviorState.getBehavior().toString() + " via " + this.toString());
             this.getAgentState().setCurrentBehaviorState(behaviorState);
             return true;
         } 
