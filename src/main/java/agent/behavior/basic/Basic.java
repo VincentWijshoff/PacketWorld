@@ -51,8 +51,6 @@ public class Basic {
         }
         agentCommunication.clearMessages();
 
-        System.out.println(agentState.getName());
-        System.out.println(agentState.getMemoryFragment("air"));
     }
 
     private static String encode(List<Node> nodes) {

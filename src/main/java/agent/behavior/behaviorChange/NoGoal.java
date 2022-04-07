@@ -13,7 +13,7 @@ public class NoGoal extends BehaviorChange {
 
     @Override
     public void updateChange() {
-        this.noDestination = getAgentState().hasCarry() && !getAgentState().seesDestination();
+        this.noDestination = getAgentState().hasCarry() && !getAgentState().seesDestination(getAgentState().getCarry().get().getColor());
         this.noPacket = !getAgentState().hasCarry() && !getAgentState().seesPacket();
     }
 
