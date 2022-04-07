@@ -44,16 +44,6 @@ public class Basic {
         Memory.printMemory(agentState);
     }
 
-    private static String encode(List<Node> nodes) {
-        if (nodes.size() == 0) return "";
-        StringBuilder fin = new StringBuilder();
-        for (Node n : nodes) {
-            fin.append(n.x).append(";").append(n.y).append("-");
-        }
-        fin.deleteCharAt(fin.length()-1);
-        return fin.toString();
-    }
-
     /**
      * Finds all CellPerceptions in the view that are of a given type.
      * @param clazz The type to look for
