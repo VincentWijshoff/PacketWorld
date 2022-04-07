@@ -28,7 +28,7 @@ public class SeesGoal extends BehaviorChange {
         this.seesPacket = !getAgentState().hasCarry() && getAgentState().seesPacket();
         this.seesDestination = getAgentState().hasCarry() && getAgentState().seesDestination(getAgentState().getCarry().get().getColor());
         this.remembersDestination = getAgentState().hasCarry() && getAgentState().getMemoryFragment(getAgentState().getCarry().get().getColor().toString()) != null;
-        this.seesCharger = getAgentState().getBatteryState() < 20
+        this.seesCharger = getAgentState().getBatteryState() < 200 // TODO replace this with dynamic value based on distance to closest energy station
                 && (!findOfType(EnergyStationRep.class, getAgentState()).isEmpty() || getAgentState().getMemoryFragment("chargers") != null);
         if (seesPacket) {
             List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
