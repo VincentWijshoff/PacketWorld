@@ -16,11 +16,9 @@ public class Basic {
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
         // broadcast all info
         // TODO: Broadcast is only allowed for energy-related information
-        Set<String> keys = agentState.getMemoryFragmentKeys();
-        for (String key : keys) {
-            String message = key + "=" + agentState.getMemoryFragment(key);
-            agentCommunication.broadcastMessage(message);
-        }
+        String message = Memory.MemKey.CHARGERS + "=" + Memory.chargers().getRawData(agentState);
+        agentCommunication.broadcastMessage(message);
+
         Collection<Mail> messages = agentCommunication.getMessages();
 
         // messages have the following structure: TYPE=DATA
