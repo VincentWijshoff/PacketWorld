@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class Memory {
 
     // The MemoryFragmentKeys (MAX_MEMORY_FRAGMENTS = 10 in AgentImp)
-    private enum MemKey {
+    public enum MemKey {
         AIR,
         WALLS,
         CHARGERS,
@@ -31,6 +31,9 @@ public class Memory {
     public static MemoryFragment destinations() { return mem.get(MemKey.DESTINATIONS); }
     public static MemoryFragment recentVisits() { return mem.get(MemKey.RECENTLY_VISITED); }
     public static MemoryFragment defaults() { return mem.get(MemKey.DEFAULT); }
+
+    public static MemKey getKey(String key) { return MemKey.valueOf(key); }
+    public static MemoryFragment getFragment(String fragment) { return mem.get(getKey(fragment)); }
 
 
     // MemoryFragment specific functions
@@ -107,7 +110,7 @@ public class Memory {
          * @param storedCell the string in memory
          * @return the values
          */
-        static String[] decode(String storedCell) {
+        public static String[] decode(String storedCell) {
             if (storedCell == null) return null;
             String str = storedCell.substring(1, storedCell.length()-1); // remove brackets
             return str.split(","); // get stored values
@@ -121,13 +124,12 @@ public class Memory {
             for (CellPerception cell : cells) add(agentState, cell);
         }
         public void add(AgentState agentState, CellPerception cell) {
-            if (check(cell)) store(agentState, cell);
+            if (check(cell)) store(agentState, this.encode(cell));
         }
 
         // Stores a cell into 'this' MemoryFragment of the agent's memory.
-        private void store(AgentState agentState, CellPerception cell) {
+        private void store(AgentState agentState, String newCell) {
             String rawData = agentState.getMemoryFragment(memoryFragment);
-            String newCell = this.encode(cell);
 
             // The agent doesn't have a memory fragment for this type of cell yet.
             if (rawData == null || rawData.length() == 0)
@@ -139,6 +141,13 @@ public class Memory {
                 else if (getMemory(agentState).contains(newCell)) removeFromMemory(agentState, newCell);
 
                 agentState.addMemoryFragment(memoryFragment, rawData + newCell);
+            }
+        }
+
+        public void storeAll(AgentState agentState, String cells) {
+            Matcher matcher = pattern.matcher(cells);
+            while (matcher.find()) {
+                store(agentState, matcher.group());
             }
         }
 
@@ -192,7 +201,7 @@ public class Memory {
     }
 
 
-    // General femory functions
+    // General memory functions
 
     // Adds all cells to the correct memory fragment
     public static void addAll(AgentState agentState, Collection<CellPerception> cells) {
@@ -233,7 +242,7 @@ public class Memory {
 
     // Gets the target of an agent
     public static int[] getTarget(AgentState agentState) {
-        String[] target = MemoryFragment.decode(agentState.getMemoryFragment(MemKey.TARGET.name()));
+        String[] target = MemoryFragment.decode(agentState.getMemoryFragment(MemKey.TARGET.toString()));
         return target == null ? null : new int[]{Integer.parseInt(target[0]), Integer.parseInt(target[1])};
     }
 
@@ -243,7 +252,7 @@ public class Memory {
     }
     // Sets the target of an agent
     public static void setTarget(AgentState agentState, int[] loc) {
-        agentState.addMemoryFragment(MemKey.TARGET.name(), defaults().encode(loc));
+        agentState.addMemoryFragment(MemKey.TARGET.toString(), defaults().encode(loc));
     }
 
     // Checks if the agent has a destination of a certain color in memory.

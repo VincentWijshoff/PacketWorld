@@ -22,34 +22,24 @@ public class Basic {
             agentCommunication.broadcastMessage(message);
         }
         Collection<Mail> messages = agentCommunication.getMessages();
-        agentCommunication.clearMessages();
+
         // messages have the following structure: TYPE=DATA
         for (Mail m : messages) {
             String[] info = m.getMessage().split("=");
-            if(Objects.equals(info[0], "recentlyVisited") || Objects.equals(info[0], "x") || Objects.equals(info[0], "y")) continue;
-            String knownData = agentState.getMemoryFragment(info[0]);
-            if(knownData == null){
+            Memory.MemKey key = Memory.getKey(info[0]);
+            if(Objects.equals(key, Memory.MemKey.RECENTLY_VISITED) || Objects.equals(key, Memory.MemKey.TARGET)) continue;
+
+            Memory.MemoryFragment frag = Memory.getFragment(info[0]);
+            if (frag.isEmpty(agentState)) {
                 agentState.addMemoryFragment(info[0], info[1]);
-                continue;
+            } else {
+                frag.storeAll(agentState, info[1]);
             }
-            List<Node> knownNodes = new ArrayList<>();
-            List<Node> receivedNodes = new ArrayList<>();
-            for (String knownPoint : knownData.split("-")) {
-                knownNodes.add(new Node(Integer.parseInt(knownPoint.split(";")[0]), Integer.parseInt(knownPoint.split(";")[1])));
-            }
-            for (String recPoint : info[1].split("-")) {
-                receivedNodes.add(new Node(Integer.parseInt(recPoint.split(";")[0]), Integer.parseInt(recPoint.split(";")[1])));
-            }
-            knownNodes.removeIf((node -> {
-                List<Node> copyOfRecNodes = new ArrayList<>(receivedNodes);
-                copyOfRecNodes.removeIf(node1 -> node.x != node1.x || node.y != node1.y);
-                return !copyOfRecNodes.isEmpty();
-            }));
-            agentState.addMemoryFragment(info[0], encode(knownNodes) + "-" + encode(receivedNodes));
         }
-        System.out.println(agentState.getName());
-        System.out.println(agentState.getMemoryFragment("air"));
+        agentCommunication.clearMessages();
+        Memory.printMemory(agentState);
     }
+
 
     private static String encode(List<Node> nodes) {
         StringBuilder fin = new StringBuilder();
