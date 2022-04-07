@@ -15,6 +15,7 @@ public class Basic {
 
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
         // broadcast all info
+        // TODO: Broadcast is only allowed for energy-related information
         Set<String> keys = agentState.getMemoryFragmentKeys();
         for (String key : keys) {
             String message = key + "=" + agentState.getMemoryFragment(key);
