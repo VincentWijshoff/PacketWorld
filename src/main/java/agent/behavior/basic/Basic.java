@@ -14,15 +14,17 @@ public class Basic {
     public static boolean optimization3 = true; // don't go back to recently visited positions
 
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
-        // broadcast all info
-        // TODO: Broadcast is only allowed for energy-related information
+        // broadcast charger locations
+
         Set<String> keys = agentState.getMemoryFragmentKeys();
-        for (String key : keys) {
-            String message = key + "=" + agentState.getMemoryFragment(key);
+        if (keys.contains("chargers")) {
+            String message = "chargers" + "=" + agentState.getMemoryFragment("chargers");
             agentCommunication.broadcastMessage(message);
         }
+
+        //TODO: communicate destinations and walls when in range of other agents
+
         Collection<Mail> messages = agentCommunication.getMessages();
-        agentCommunication.clearMessages();
         // messages have the following structure: TYPE=DATA
         for (Mail m : messages) {
             String[] info = m.getMessage().split("=");
@@ -47,6 +49,8 @@ public class Basic {
             }));
             agentState.addMemoryFragment(info[0], encode(knownNodes) + "-" + encode(receivedNodes));
         }
+        agentCommunication.clearMessages();
+
         System.out.println(agentState.getName());
         System.out.println(agentState.getMemoryFragment("air"));
     }
