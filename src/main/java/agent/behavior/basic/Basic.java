@@ -17,8 +17,8 @@ public class Basic {
         // broadcast charger locations
 
         Set<String> keys = agentState.getMemoryFragmentKeys();
-        if (keys.contains("chargers")) {
-            String message = "chargers" + "=" + agentState.getMemoryFragment("chargers");
+        if (keys.contains(Memory.MemKey.CHARGERS.toString())) {
+            String message = Memory.MemKey.CHARGERS.toString() + "=" + agentState.getMemoryFragment(Memory.MemKey.CHARGERS.toString());
             agentCommunication.broadcastMessage(message);
         }
 
@@ -37,10 +37,12 @@ public class Basic {
             List<Node> knownNodes = new ArrayList<>();
             List<Node> receivedNodes = new ArrayList<>();
             for (String knownPoint : knownData.split("-")) {
-                knownNodes.add(new Node(Integer.parseInt(knownPoint.split(";")[0]), Integer.parseInt(knownPoint.split(";")[1])));
+                String[] loc = Memory.MemoryFragment.decode(knownPoint);
+                knownNodes.add(new Node(loc[0], loc[1]));
             }
             for (String recPoint : info[1].split("-")) {
-                receivedNodes.add(new Node(Integer.parseInt(recPoint.split(";")[0]), Integer.parseInt(recPoint.split(";")[1])));
+                String[] loc = Memory.MemoryFragment.decode(recPoint);
+                receivedNodes.add(new Node(loc[0], loc[1]));
             }
             knownNodes.removeIf((node -> {
                 List<Node> copyOfRecNodes = new ArrayList<>(receivedNodes);
@@ -54,6 +56,7 @@ public class Basic {
     }
 
     private static String encode(List<Node> nodes) {
+        if (nodes.size() == 0) return "";
         StringBuilder fin = new StringBuilder();
         for (Node n : nodes) {
             fin.append(n.x).append(";").append(n.y).append("-");
@@ -133,6 +136,11 @@ public class Basic {
         public Node(int x, int y) {
             this.x = x;
             this.y = y;
+        }
+
+        public Node(String x, String y) {
+            this.x = Integer.parseInt(x);
+            this.y = Integer.parseInt(y);
         }
     }
 

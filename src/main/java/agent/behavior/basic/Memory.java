@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class Memory {
 
     // The MemoryFragmentKeys (MAX_MEMORY_FRAGMENTS = 10 in AgentImp)
-    private enum MemKey {
+    public enum MemKey {
         AIR,
         WALLS,
         CHARGERS,
