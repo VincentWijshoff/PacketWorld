@@ -24,6 +24,7 @@ public class CanPickup extends BehaviorChange {
     @Override
     public boolean isSatisfied() {
         return !getAgentState().hasCarry() &&
+                getAgentState().getPerception().getCellPerceptionOnAbsPos(this.x, this.y) != null &&
                 getAgentState().getPerception().getCellPerceptionOnAbsPos(this.x, this.y).containsPacket() &&
                 Math.abs(this.agentX - this.x) <= 1 &&
                 Math.abs(this.agentY - this.y) <= 1;
