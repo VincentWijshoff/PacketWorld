@@ -6,10 +6,8 @@ import java.util.List;
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
-import environment.world.destination.DestinationRep;
-import environment.world.energystation.EnergyStationRep;
 
-public class Basic{
+public class Basic {
 
     public static boolean optimization1 = true; // move away from walls
     public static boolean optimization2 = true; // store destination locations, walls and pathfinder
@@ -106,138 +104,23 @@ public class Basic{
         return perceptionList;
     }
 
-    /**
-     * Stores all destinations in view into the agent's memory.
-     * @param agentState The agent seeing and storing destinations.
-     * @note Destinations that are already in memory are ignored to avoid duplicates.
-     */
-    public static void storeDestinations(AgentState agentState) {
-        storeChargingStations(agentState);
-        if (!agentState.seesDestination()) return;
-        List<CellPerception> dests = findOfType(DestinationRep.class, agentState);
-        DESTS: for (CellPerception dest : dests) {
-            DestinationRep destRep = dest.getRepOfType(DestinationRep.class);
-            String data = destRep.getX() + ";" + destRep.getY();
-            if (agentState.getMemoryFragment(destRep.getColor().toString()) != null) {
-                // now we need to check if the destination was not already stored in memory
-                String mem = agentState.getMemoryFragment(destRep.getColor().toString());
-                String[] destinations = mem.split("-");
-                for (String destination : destinations) {
-                    if (data.equals(destination)) continue DESTS; // already in memory
-                }
-                // not in memory
-                agentState.addMemoryFragment(destRep.getColor().toString(), mem + "-" + data);
-            } else {
-                agentState.addMemoryFragment(destRep.getColor().toString(), data);
-            }
+
+    // Add all in-sight in memory
+    public static void storeView(AgentState agentState) {
+        List<CellPerception> viewArea = new ArrayList<>();
+        for (CellPerception[] c1 : getViewArea(agentState)) {
+            for (CellPerception c2 : c1)
+                viewArea.add(c2);
         }
+        // Don't add agent itself to memory
+        viewArea.remove(agentState.getPerception().getCellAt(agentState.getX(), agentState.getY()));
+        // Don't add null-cells
+        viewArea.removeAll(Collections.singleton(null));
+
+        Memory.addAll(agentState, viewArea);
+        // Memory.printMemory(agentState);
     }
 
-    public static void storeChargingStations(AgentState agentState){
-        List<CellPerception> dests = findOfType(EnergyStationRep.class, agentState);
-        DESTS: for (CellPerception dest : dests) {
-            EnergyStationRep destRep = dest.getRepOfType(EnergyStationRep.class);
-            String data = destRep.getX() + ";" + destRep.getY();
-            if (agentState.getMemoryFragment("chargers") != null) {
-                // now we need to check if the destination was not already stored in memory
-                String mem = agentState.getMemoryFragment("chargers");
-                String[] destinations = mem.split("-");
-                for (String destination : destinations) {
-                    if (data.equals(destination)) continue DESTS; // already in memory
-                }
-                // not in memory
-                agentState.addMemoryFragment("chargers", mem + "-" + data);
-            } else {
-                agentState.addMemoryFragment("chargers", data);
-            }
-        }
-    }
-
-    /**
-     * Stores all walls in view into the agent's memory.
-     * @param agentState The agent seeing and storing walls.
-     * @note Walls that are already in memory are ignored to avoid duplicates.
-     */
-    public static void storeWalls(AgentState agentState) {
-        // Get all in view range
-        CellPerception[][] fullArea = getViewArea(agentState);
-
-        // every null is a wall
-        List<Node> fullWallList = new ArrayList<>();
-        List<Node> fullAirList = new ArrayList<>();
-        for (int i = 0; i < fullArea.length; i++) {
-            for (int j = 0; j < fullArea[i].length; j++) {
-                Node node = new Node(i + agentState.getPerception().getOffsetX()
-                        , j + agentState.getPerception().getOffsetY());
-
-                if(fullArea[i][j] == null || fullArea[i][j].containsWall()) fullWallList.add(node);
-                else fullAirList.add(node);
-            }
-        }
-
-        // Add previously stored Air and Walls to lists
-        addStoredToList(fullAirList, "air", agentState);
-        addStoredToList(fullWallList, "walls", agentState);
-
-        // now we check wall list against air list
-        ArrayList<Node> toRemove = new ArrayList<>();
-        for (Node wall : fullWallList) {
-            for (Node air : fullAirList) {
-                if (wall.x == air.x && wall.y == air.y) {
-                    // this is definitely not a wall
-                    toRemove.add(wall);
-                }
-            }
-        }
-        for (Node n : toRemove) fullWallList.remove(n);
-
-        // and finally we add both to memory
-        StringBuilder wallMem = new StringBuilder();
-        StringBuilder airMem = new StringBuilder();
-
-        if (fullWallList.size() > 0) {
-            for (Node wall : fullWallList) {
-                wallMem.append("-").append(wall.x).append(";").append(wall.y);
-            }
-            wallMem.deleteCharAt(0);
-        }
-
-        if (fullAirList.size() > 0) {
-            for (Node air : fullAirList) {
-                airMem.append("-").append(air.x).append(";").append(air.y);
-            }
-            airMem.deleteCharAt(0);
-        }
-
-        agentState.addMemoryFragment("walls", wallMem.toString());
-        agentState.addMemoryFragment("air", airMem.toString());
-    }
-
-    /**
-     * Adds stored positions in the agent's memory to the given list.
-     * @param listOfNodes The list to add the stored positions to.
-     * @param memoryKey The type of cells to look for in memory.
-     * @param agentState The agent state
-     */
-    private static void addStoredToList(List<Node> listOfNodes, String memoryKey, AgentState agentState) {
-        if (agentState.getMemoryFragment(memoryKey) == null) return;
-
-        String[] allStored = agentState.getMemoryFragment(memoryKey).split("-");
-        for (String storedPos : allStored) {
-            if (storedPos.length() == 0) continue;
-
-            String[] pos = storedPos.split(";");
-            // Don't add when pos is already in list
-            boolean inList = false;
-            for (Node n : listOfNodes) {
-                if (n.x == Integer.parseInt(pos[0]) && n.y == Integer.parseInt(pos[1])) {
-                    inList = true;
-                    break;
-                }
-            }
-            if (!inList) listOfNodes.add(new Node(Integer.parseInt(pos[0]), Integer.parseInt(pos[1])));
-        }
-    }
 
     // Helper class for breadth-first optimal path search.
     public static class Node {

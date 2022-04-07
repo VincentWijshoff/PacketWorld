@@ -4,22 +4,20 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import agent.behavior.basic.Memory;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static agent.behavior.basic.Basic.*;
 
 public class MoveTo extends Behavior {
 
     private int x, y;
-
-    public MoveTo(){
-    }
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
@@ -29,31 +27,29 @@ public class MoveTo extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         // also here store walls and destinations
-        if(optimization2){
-            storeDestinations(agentState);
-            storeWalls(agentState);
+        if (optimization2) {
+            storeView(agentState);
         }
 
-        this.x = Integer.parseInt(agentState.getMemoryFragment("x"));
-        this.y = Integer.parseInt(agentState.getMemoryFragment("y"));
+        int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
+        this.x = target[0];
+        this.y = target[1];
+
         this.moveTo(this.x, this.y, agentState, agentAction);
     }
 
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction) {
         // we need to find a path from the current position to the given destination keeping into account the walls
         // if no walls in memory, just take the next best step
-        if(agentState.getMemoryFragment("walls") == null){
+        if (Memory.walls().isEmpty(agentState)) {
             moveToBestPosition(i, j, agentState, agentAction);
             return;
         }
         // calculate the optimal path and fetch the best next step
         // first add all walls as nodes
         ArrayList<Node> nodeList = new ArrayList<>();
-        for(String posStr: agentState.getMemoryFragment("walls").split("-")){
-            if (posStr != "") {
-                String[] pos = posStr.split(";");
-                nodeList.add(new Node(Integer.parseInt(pos[0]), Integer.parseInt(pos[1])));
-            }
+        for (int[] pos : Memory.walls().getAllStoredPos(agentState)) {
+            nodeList.add(new Node(pos[0], pos[1]));
         }
         // now get the next best position from the optimal path
         int[] bestPos = getBestNextMove(agentState.getX(), agentState.getY(), i, j, nodeList, agentState);
