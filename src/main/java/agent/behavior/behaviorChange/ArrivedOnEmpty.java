@@ -20,7 +20,8 @@ public class ArrivedOnEmpty extends BehaviorChange {
     public void updateChange() {
         int[] target = Objects.requireNonNull(Memory.getTarget(getAgentState()));
         this.arrived = target[0] == getAgentState().getX() && target[1] == getAgentState().getY();
-        this.isChargingStation = getAgentState().getPerception().getCellPerceptionOnAbsPos(getAgentState().getX(), getAgentState().getY() + 1).containsEnergyStation();
+        this.isChargingStation = getAgentState().getPerception().getCellPerceptionOnAbsPos(getAgentState().getX(), getAgentState().getY() + 1) != null &&
+                getAgentState().getPerception().getCellPerceptionOnAbsPos(getAgentState().getX(), getAgentState().getY() + 1).containsEnergyStation();
     }
 
     @Override
