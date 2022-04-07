@@ -23,7 +23,7 @@ public class CanCharge extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return Math.abs(this.agentX - this.x) <= 1 &&
-                Math.abs(this.agentY - this.y) <= 1;
+        return Math.abs(this.agentX - this.x) == 0 &&
+                Math.abs(this.agentY - this.y) == 0;
     }
 }

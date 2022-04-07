@@ -62,19 +62,25 @@ public class SeesGoal extends BehaviorChange {
             }
             // and save the shortest distance in memory
             Memory.setTarget(getAgentState(), closestDestLoc);
-        } else if (seesCharger){
+        } else if (seesCharger) {
             // needs charger and sees one
-            if(!findOfType(EnergyStationRep.class, getAgentState()).isEmpty()){
+            if (!findOfType(EnergyStationRep.class, getAgentState()).isEmpty()) {
                 // sees one (sorted list)
                 List<CellPerception> destlist = findOfType(EnergyStationRep.class, getAgentState());
-                Memory.setTarget(getAgentState(), destlist.get(0));
-            }else{
+                Memory.setTarget(getAgentState(), new int[]{ destlist.get(0).getX(), destlist.get(0).getY() - 1 }); //agent needs to move to space 1 cell above charger to charge.
+            } else {
                 // remembers one
                 List<Basic.Node> chargerlist = new ArrayList<>();
                 List<int[]> storedChargers = Memory.chargers().getAllStoredPos(getAgentState());
                 for (int[] pos : storedChargers) {
                     chargerlist.add(new Basic.Node(pos[0], pos[1]));
                 }
+
+                //agent needs to move to space 1 cell above charger to charge.
+                chargerlist.stream().map((node -> {
+                    return new Basic.Node(node.x, node.y - 1);
+                }));
+
                 // find closest one
                 chargerlist.sort((p1, p2) -> {
                     double d1 = Perception.distance(getAgentState().getX(), getAgentState().getY(), p1.x, p1.y);
