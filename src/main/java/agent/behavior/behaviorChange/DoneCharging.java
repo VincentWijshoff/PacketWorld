@@ -15,6 +15,6 @@ public class DoneCharging  extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return this.batteryLife >= 100 ;
+        return this.batteryLife >= 1000 ;
     }
 }

@@ -77,9 +77,9 @@ public class SeesGoal extends BehaviorChange {
                 }
 
                 //agent needs to move to space 1 cell above charger to charge.
-                chargerlist.stream().map((node -> {
+                chargerlist = new ArrayList<>(chargerlist.stream().map((node -> {
                     return new Basic.Node(node.x, node.y - 1);
-                }));
+                })).toList());
 
                 // find closest one
                 chargerlist.sort((p1, p2) -> {
