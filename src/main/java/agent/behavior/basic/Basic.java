@@ -3,6 +3,7 @@ package agent.behavior.basic;
 import java.util.*;
 import java.util.List;
 
+import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
@@ -120,7 +121,6 @@ public class Basic {
         Memory.addAll(agentState, viewArea);
         // Memory.printMemory(agentState);
     }
-
 
     // Helper class for breadth-first optimal path search.
     public static class Node {

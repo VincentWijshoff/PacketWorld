@@ -15,6 +15,7 @@ public class Charge extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        //charging
         agentAction.skip();
     }
 }

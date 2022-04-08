@@ -7,6 +7,7 @@ import environment.CellPerception;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.energystation.EnergyStationRep;
+import environment.world.flag.FlagRep;
 import environment.world.packet.PacketRep;
 import util.MyColor;
 
@@ -117,6 +118,6 @@ public class SeesGoal extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return this.seesDestination || this.seesPacket || this.remembersDestination || (this.seesCharger && this.lowBattery);
+        return this.seesDestination || this.seesPacket || this.remembersDestination || (this.seesCharger && this.lowBattery) || this.seesCharger;
     }
 }

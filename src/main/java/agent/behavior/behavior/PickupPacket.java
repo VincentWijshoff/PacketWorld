@@ -5,7 +5,6 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 import agent.behavior.basic.Memory;
-
 import java.util.Objects;
 
 import static agent.behavior.basic.Basic.communicateInfo;
