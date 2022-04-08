@@ -118,6 +118,6 @@ public class SeesGoal extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return this.seesDestination || this.seesPacket || this.remembersDestination || (this.seesCharger && this.lowBattery) || this.seesCharger;
+        return this.seesDestination || this.seesPacket || this.remembersDestination || (this.seesCharger && this.lowBattery);
     }
 }
