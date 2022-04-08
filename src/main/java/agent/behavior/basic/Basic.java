@@ -6,6 +6,7 @@ import java.util.List;
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
+import environment.world.agent.AgentRep;
 
 public class Basic {
 
@@ -18,11 +19,26 @@ public class Basic {
 
         Set<String> keys = agentState.getMemoryFragmentKeys();
         if (keys.contains(Memory.MemKey.CHARGERS.toString())) {
-            String message = Memory.MemKey.CHARGERS.toString() + "=" + agentState.getMemoryFragment(Memory.MemKey.CHARGERS.toString());
+            String message = Memory.MemKey.CHARGERS + "=" + agentState.getMemoryFragment(Memory.MemKey.CHARGERS.toString());
             agentCommunication.broadcastMessage(message);
         }
 
-        //TODO: communicate destinations and walls when in range of other agents
+        //find all agent reps
+        List<CellPerception> perceptions = findOfType(AgentRep.class, agentState);
+        //send to all agent reps
+        for (CellPerception perc:perceptions) {
+            AgentRep agent = perc.getAgentRepresentation().get();
+            if (keys.contains(Memory.MemKey.DESTINATIONS.toString())) {
+                    String message = Memory.MemKey.DESTINATIONS + "=" + agentState.getMemoryFragment(Memory.MemKey.DESTINATIONS.toString());
+                    agentCommunication.sendMessage(agent, message);
+            }
+            if (keys.contains(Memory.MemKey.WALLS.toString())) {
+                String message = Memory.MemKey.WALLS + "=" + agentState.getMemoryFragment(Memory.MemKey.WALLS.toString());
+                agentCommunication.sendMessage(agent, message);
+            }
+        }
+
+
 
         Collection<Mail> messages = agentCommunication.getMessages();
 
@@ -41,7 +57,7 @@ public class Basic {
         }
 
         agentCommunication.clearMessages();
-        //Memory.printMemory(agentState);
+        Memory.printMemory(agentState);
     }
 
     /**
