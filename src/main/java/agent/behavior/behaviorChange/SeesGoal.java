@@ -105,7 +105,10 @@ public class SeesGoal extends BehaviorChange {
         double dist = Perception.manhattanDistance(getAgentState().getX(), getAgentState().getY(), x, y);
         double cost = dist*10*1.5;
         if (getAgentState().hasCarry()) cost *= 2; // carrying a packet costs 20 energy per step instead of 10
-        if (getAgentState().getBatteryState() <= cost) {
+        // cost is the (approximate) minimal cost to get to the charger
+        // we set an upper value to create an interval
+        double maxCost = cost * (Math.random()+1);// random number between 1 and 2
+        if (getAgentState().getBatteryState() <= maxCost) {
             System.out.println(getAgentState().getName() + ": wants to recharge with battery: " + getAgentState().getBatteryState() + " & distance: " + dist);
             return true;
         }
