@@ -29,7 +29,7 @@ public class SeesGoal extends BehaviorChange {
 
     @Override
     public void updateChange() {
-        this.seesPacket = !getAgentState().hasCarry() && getAgentState().seesPacket();
+        this.seesPacket = !getAgentState().hasCarry() && getAgentState().seesPacket() && getAgentState().getBatteryState() > 20;
         this.seesDestination = getAgentState().hasCarry() && getAgentState().seesDestination(getAgentState().getCarry().get().getColor());
         this.remembersDestination = getAgentState().hasCarry() && Memory.knowsDestOf(getAgentState(), getAgentState().getCarry().get().getColor());
         this.seesCharger = (!findOfType(EnergyStationRep.class, getAgentState()).isEmpty() || (!Memory.chargers().isEmpty(getAgentState())));

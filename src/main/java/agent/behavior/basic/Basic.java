@@ -112,6 +112,7 @@ public class Basic {
                     cellPerception -> {
                         return cellPerception != null &&
                                 cellPerception.isFree() &&
+                                agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1) != null &&
                                 !agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1).containsEnergyStation(); //dont place packet on charging station
                     }
             ).findFirst().get();
