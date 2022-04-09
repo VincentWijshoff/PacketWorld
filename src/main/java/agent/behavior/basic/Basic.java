@@ -105,7 +105,7 @@ public class Basic {
         return perceptionList;
     }
 
-    public static void dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
+    public static boolean dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
         if (agentState.getBatteryState() <= 20 && agentState.hasCarry()) {
             CellPerception[] neighbours = agentState.getPerception().getNeighbours();
             CellPerception freeCell = Arrays.stream(neighbours).filter(
@@ -118,7 +118,9 @@ public class Basic {
             ).findFirst().get();
 
             agentAction.putPacket(freeCell.getX(), freeCell.getY());
+            return true;
         }
+        return false;
     }
 
 

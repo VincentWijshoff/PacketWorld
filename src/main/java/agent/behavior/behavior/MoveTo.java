@@ -31,7 +31,7 @@ public class MoveTo extends Behavior {
             storeView(agentState);
         }
 
-        dropPacketIfDying(agentState, agentAction);
+        if(dropPacketIfDying(agentState, agentAction)) return; // only 1 action per move
 
         int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
         this.x = target[0];
