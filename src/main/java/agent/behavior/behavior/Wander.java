@@ -43,6 +43,8 @@ public class Wander extends Behavior {
                 new Coordinate(1, -1), new Coordinate(-1, 1)
         ));
 
+        dropPacketIfDying(agentState, agentAction);
+
         // Shuffle moves randomly
         Collections.shuffle(moves);
 

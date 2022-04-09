@@ -105,6 +105,21 @@ public class Basic {
         return perceptionList;
     }
 
+    public static void dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
+        if (agentState.getBatteryState() <= 20 && agentState.hasCarry()) {
+            CellPerception[] neighbours = agentState.getPerception().getNeighbours();
+            CellPerception freeCell = Arrays.stream(neighbours).filter(
+                    cellPerception -> {
+                        return cellPerception != null &&
+                                cellPerception.isFree() &&
+                                !agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1).containsEnergyStation(); //dont place packet on charging station
+                    }
+            ).findFirst().get();
+
+            agentAction.putPacket(freeCell.getX(), freeCell.getY());
+        }
+    }
+
 
     // Add all in-sight in memory
     public static void storeView(AgentState agentState) {
