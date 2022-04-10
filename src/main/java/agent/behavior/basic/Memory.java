@@ -167,6 +167,15 @@ public class Memory {
         }
 
         /**
+         * Gets the raw string from memory
+         * @param agentState the state of the agent requesting the data
+         * @return the raw data from memory
+         */
+        public String getRawData(AgentState agentState) {
+            return agentState.getMemoryFragment(memoryFragment);
+        }
+
+        /**
          * Gets all locations of cells, stored in memory, of 'this' type by converting memory into an int[] list.
          * @param agentState the state of the agent
          * @return a list of locations (x, y) without extra attributes.

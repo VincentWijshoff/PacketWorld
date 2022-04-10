@@ -56,9 +56,35 @@ public class Basic {
                 frag.storeAll(agentState, info[1]);
             }
         }
-
         agentCommunication.clearMessages();
-        // Memory.printMemory(agentState);
+        Memory.printMemory(agentState);
+    }
+
+    public static boolean dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
+        if (agentState.getBatteryState() <= 20 && agentState.hasCarry()) {
+            CellPerception[] neighbours = agentState.getPerception().getNeighbours();
+            CellPerception freeCell = Arrays.stream(neighbours).filter(
+                    cellPerception -> {
+                        return cellPerception != null &&
+                                cellPerception.isFree() &&
+                                !agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1).containsEnergyStation(); //dont place packet on charging station
+                    }
+            ).findFirst().get();
+
+            agentAction.putPacket(freeCell.getX(), freeCell.getY());
+            return true;
+        }
+        return false;
+    }
+
+
+    private static String encode(List<Node> nodes) {
+        StringBuilder fin = new StringBuilder();
+        for (Node n : nodes) {
+            fin.append(n.x).append(";").append(n.y).append("-");
+        }
+        fin.deleteCharAt(fin.length()-1);
+        return fin.toString();
     }
 
     /**
@@ -105,24 +131,6 @@ public class Basic {
         return perceptionList;
     }
 
-    public static boolean dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
-        if (agentState.getBatteryState() <= 20 && agentState.hasCarry()) {
-            CellPerception[] neighbours = agentState.getPerception().getNeighbours();
-            CellPerception freeCell = Arrays.stream(neighbours).filter(
-                    cellPerception -> {
-                        return cellPerception != null &&
-                                cellPerception.isFree() &&
-                                agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1) != null &&
-                                !agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1).containsEnergyStation(); //dont place packet on charging station
-                    }
-            ).findFirst().get();
-
-            agentAction.putPacket(freeCell.getX(), freeCell.getY());
-            return true;
-        }
-        return false;
-    }
-
 
     // Add all in-sight in memory
     public static void storeView(AgentState agentState) {
@@ -140,6 +148,7 @@ public class Basic {
         // Memory.printMemory(agentState);
     }
 
+
     // Helper class for breadth-first optimal path search.
     public static class Node {
         public int x, y;
@@ -149,11 +158,6 @@ public class Basic {
         public Node(int x, int y) {
             this.x = x;
             this.y = y;
-        }
-
-        public Node(String x, String y) {
-            this.x = Integer.parseInt(x);
-            this.y = Integer.parseInt(y);
         }
     }
 
