@@ -78,7 +78,7 @@ target 2        # MoveTo
 
 agent.behavior.behaviorChange.CanCharge
 nbArgs 0
-priority 0
+priority 1
 source 2        # MoveTo
 target 5        # Charge
 

@@ -31,6 +31,8 @@ public class MoveTo extends Behavior {
             storeView(agentState);
         }
 
+        if(dropPacketIfDying(agentState, agentAction)) return; // only 1 action per move
+
         int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
         this.x = target[0];
         this.y = target[1];
@@ -41,10 +43,6 @@ public class MoveTo extends Behavior {
     private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction) {
         // we need to find a path from the current position to the given destination keeping into account the walls
         // if no walls in memory, just take the next best step
-        if (Memory.walls().isEmpty(agentState)) {
-            moveToBestPosition(i, j, agentState, agentAction);
-            return;
-        }
         // calculate the optimal path and fetch the best next step
         // first add all walls as nodes
         ArrayList<Node> nodeList = new ArrayList<>();

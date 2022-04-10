@@ -23,7 +23,9 @@ public class CanCharge extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return Math.abs(this.agentX - this.x) <= 1 &&
-                Math.abs(this.agentY - this.y) <= 1;
+        return Math.abs(this.agentX - this.x) == 0 &&
+                Math.abs(this.agentY - this.y) == 0 &&
+                getAgentState().getPerception().getCellPerceptionOnAbsPos(this.agentX, this.agentY + 1) != null &&
+                getAgentState().getPerception().getCellPerceptionOnAbsPos(this.agentX, this.agentY + 1).containsEnergyStation();
     }
 }

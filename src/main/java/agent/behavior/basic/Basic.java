@@ -3,9 +3,11 @@ package agent.behavior.basic;
 import java.util.*;
 import java.util.List;
 
+import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
+import environment.world.agent.AgentRep;
 
 public class Basic {
 
@@ -14,10 +16,30 @@ public class Basic {
     public static boolean optimization3 = true; // don't go back to recently visited positions
 
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
-        // broadcast all info
-        // TODO: Broadcast is only allowed for energy-related information
-        String message = Memory.MemKey.CHARGERS + "=" + Memory.chargers().getRawData(agentState);
-        agentCommunication.broadcastMessage(message);
+        // broadcast charger locations
+
+        Set<String> keys = agentState.getMemoryFragmentKeys();
+        if (keys.contains(Memory.MemKey.CHARGERS.toString())) {
+            String message = Memory.MemKey.CHARGERS + "=" + agentState.getMemoryFragment(Memory.MemKey.CHARGERS.toString());
+            agentCommunication.broadcastMessage(message);
+        }
+
+        //find all agent reps
+        List<CellPerception> perceptions = findOfType(AgentRep.class, agentState);
+        //send to all agent reps
+        for (CellPerception perc:perceptions) {
+            AgentRep agent = perc.getAgentRepresentation().get();
+            if (keys.contains(Memory.MemKey.DESTINATIONS.toString())) {
+                    String message = Memory.MemKey.DESTINATIONS + "=" + agentState.getMemoryFragment(Memory.MemKey.DESTINATIONS.toString());
+                    agentCommunication.sendMessage(agent, message);
+            }
+            if (keys.contains(Memory.MemKey.WALLS.toString())) {
+                String message = Memory.MemKey.WALLS + "=" + agentState.getMemoryFragment(Memory.MemKey.WALLS.toString());
+                agentCommunication.sendMessage(agent, message);
+            }
+        }
+
+
 
         Collection<Mail> messages = agentCommunication.getMessages();
 
@@ -36,6 +58,24 @@ public class Basic {
         }
         agentCommunication.clearMessages();
         Memory.printMemory(agentState);
+    }
+
+    public static boolean dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
+        if (agentState.getBatteryState() <= 20 && agentState.hasCarry()) {
+            CellPerception[] neighbours = agentState.getPerception().getNeighbours();
+            CellPerception freeCell = Arrays.stream(neighbours).filter(
+                    cellPerception -> {
+                        return cellPerception != null &&
+                                cellPerception.isFree() &&
+                                agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1) != null &&
+                                !agentState.getPerception().getCellPerceptionOnAbsPos(cellPerception.getX(), cellPerception.getY() - 1).containsEnergyStation(); //dont place packet on charging station
+                    }
+            ).findFirst().get();
+
+            agentAction.putPacket(freeCell.getX(), freeCell.getY());
+            return true;
+        }
+        return false;
     }
 
 
