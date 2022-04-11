@@ -18,6 +18,10 @@ public class PickupPacket extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
-        agentAction.pickPacket(target[0], target[1]);
+        try{
+            agentAction.pickPacket(target[0], target[1]);
+        }catch (Exception e){
+            agentAction.skip();
+        }
     }
 }
