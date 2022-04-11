@@ -26,7 +26,7 @@ nbArgs 0
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 10
+nbChanges 12
 
 agent.behavior.behaviorChange.CanPickup
 nbArgs 0
@@ -87,6 +87,18 @@ nbArgs 0
 priority 0
 source 5        # Charge
 target 1        # Wander
+
+agent.behavior.behaviorChange.NeedsToCharge
+nbArgs 0
+priority 1
+source 2        # MoveTo
+target 2        # MoveTo
+
+agent.behavior.behaviorChange.NeedsToCharge
+nbArgs 0
+priority 1
+source 1        # Wander
+target 2        # MoveTo
 
 # ----------------
 # Further comments

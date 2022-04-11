@@ -57,7 +57,7 @@ public class Basic {
             }
         }
         agentCommunication.clearMessages();
-        Memory.printMemory(agentState);
+        //Memory.printMemory(agentState);
     }
 
     public static boolean dropPacketIfDying(AgentState agentState, AgentAction agentAction) {
