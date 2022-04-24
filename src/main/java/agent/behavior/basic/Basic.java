@@ -146,6 +146,21 @@ public class Basic {
         // Don't add null-cells
         viewArea.removeAll(Collections.singleton(null));
 
+        // Don't add unreachable destinations
+        Collection<CellPerception> unreachableDestinations = new ArrayList<>();
+        ArrayList<Node> wallList = new ArrayList<>();
+        for (int[] pos : Memory.walls().getAllStoredPos(agentState)) {
+            wallList.add(new Node(pos[0], pos[1]));
+        }
+        for (CellPerception perc: viewArea ) {
+            if (perc.containsAnyDestination()) {
+                Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), perc.getX(), perc.getY(), wallList, agentState);
+                boolean reachable = result.getSecond().size() == 0;
+                if (!reachable) unreachableDestinations.add(perc);
+            }
+        }
+        viewArea.removeAll(unreachableDestinations);
+
         Memory.addAll(agentState, viewArea);
         // Memory.printMemory(agentState);
     }
@@ -179,7 +194,7 @@ public class Basic {
         ArrayList<Node> packetsOnPath = new ArrayList<>();
         while (finish != null && finish.prev != null && finish.prev.prev != null) {
             finish = finish.prev;
-            if (agentState.getPerception().getCellPerceptionOnAbsPos(finish.x, finish.y).containsPacket()) {
+            if (agentState.getPerception().getCellPerceptionOnAbsPos(finish.x, finish.y) != null && agentState.getPerception().getCellPerceptionOnAbsPos(finish.x, finish.y).containsPacket()) {
                 packetsOnPath.add(new Node(finish.x, finish.y));  //Mark all packet locations, and pass as result
             }
         }
