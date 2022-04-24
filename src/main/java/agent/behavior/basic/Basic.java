@@ -148,13 +148,9 @@ public class Basic {
 
         // Don't add unreachable destinations
         Collection<CellPerception> unreachableDestinations = new ArrayList<>();
-        ArrayList<Node> wallList = new ArrayList<>();
-        for (int[] pos : Memory.walls().getAllStoredPos(agentState)) {
-            wallList.add(new Node(pos[0], pos[1]));
-        }
         for (CellPerception perc: viewArea ) {
             if (perc.containsAnyDestination()) {
-                Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), perc.getX(), perc.getY(), wallList, agentState);
+                Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), perc.getX(), perc.getY(), agentState, false);
                 boolean reachable = result.getSecond().size() == 0;
                 if (!reachable) unreachableDestinations.add(perc);
             }
@@ -178,15 +174,21 @@ public class Basic {
         }
     }
 
-    public static Pair<int[],ArrayList<Node>> getBestNextMove(int x, int y, int xDest, int yDest, ArrayList<Node> wallList, AgentState agentState) {
+    public static Pair<int[],ArrayList<Node>> getBestNextMove(int x, int y, int xDest, int yDest, AgentState agentState, boolean ignoreOutOfPerc) {
         ArrayList<Node> visitedDest = new ArrayList<>();
         visitedDest.add(new Node(x, y));
         ArrayList<Node> endPoints = new ArrayList<>();
         endPoints.add(new Node(x, y));
+
+        ArrayList<Node> wallList = new ArrayList<>();
+        for (int[] pos : Memory.walls().getAllStoredPos(agentState)) {
+            wallList.add(new Node(pos[0], pos[1]));
+        }
+
         // Basic breadth-first search which will give the shortest path to the destination
         while (foundFinish(endPoints, xDest, yDest) == null) {
             // we will expand each endpoint
-            endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest);
+            endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest, ignoreOutOfPerc);
             visitedDest.addAll(endPoints);
         }
         Node finish = foundFinish(endPoints, xDest, yDest);
@@ -215,7 +217,8 @@ public class Basic {
                                           ArrayList<Node> visitedDest,
                                                AgentState agentState,
                                                int xDest,
-                                               int yDest) {
+                                               int yDest,
+                                               boolean ignoreOutOfPerc) {
         ArrayList<Node> newEndPoints = new ArrayList<>();
         for (Node n : endPoints) {
             List<Coordinate> potMoves = new ArrayList<>(List.of(
@@ -247,8 +250,8 @@ public class Basic {
                             // cannot see this position
                             // we need a check for the edges off the world
                             // only if the new position is 1 away from the current position, otherwise dont care
-                            return Math.abs(move.getX() - agentState.getX()) > 1 ||
-                                    Math.abs(move.getY() - agentState.getY()) > 1;
+                            return ignoreOutOfPerc && (Math.abs(move.getX() - agentState.getX()) > 1 ||
+                                    Math.abs(move.getY() - agentState.getY()) > 1);
                             // False = cannot walk here so may not be an option
                             // True = cannot see this and not an option for next move because > 1 away, so assume is walkable
                         }

@@ -10,12 +10,14 @@ import environment.world.energystation.EnergyStationRep;
 import environment.world.flag.FlagRep;
 import environment.world.packet.PacketRep;
 import util.MyColor;
+import util.Pair;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import static agent.behavior.basic.Basic.findOfType;
+import static agent.behavior.basic.Basic.getBestNextMove;
 
 public class SeesGoal extends BehaviorChange {
 
@@ -31,8 +33,19 @@ public class SeesGoal extends BehaviorChange {
 
         if (seesPacket) {
             List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
-            CellPerception closestPacket = closePackets.get(0);
-            Memory.setTarget(getAgentState(), closestPacket);
+            for (CellPerception perc : closePackets) {
+                Color packetColor = perc.getRepOfType(PacketRep.class).getColor();
+                //if reachable
+                Pair<int[], ArrayList<Basic.Node>> result = getBestNextMove(getAgentState().getX(), getAgentState().getY(), perc.getX(), perc.getY(), getAgentState(), false);
+                boolean reachable = result.getSecond().size() == 0;
+                if (Memory.knowsDestOf(getAgentState(), packetColor) && reachable &&
+                        (getAgentState().getColor().isEmpty() || getAgentState().getColor().get() == packetColor)) {
+                    Memory.setTarget(getAgentState(), perc);
+                    seesPacket = true;
+                    break;
+                }
+                else seesPacket = false;
+            }
         } else if (remembersDestination) {
             List<String[]> destLocations = Memory.destinations().getAllStored(getAgentState())
                     .stream()
