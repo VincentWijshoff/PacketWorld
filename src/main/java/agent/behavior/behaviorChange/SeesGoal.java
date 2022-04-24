@@ -37,7 +37,7 @@ public class SeesGoal extends BehaviorChange {
                 Color packetColor = perc.getRepOfType(PacketRep.class).getColor();
                 //if reachable
                 Pair<int[], ArrayList<Basic.Node>> result = getBestNextMove(getAgentState().getX(), getAgentState().getY(), perc.getX(), perc.getY(), getAgentState(), false);
-                boolean reachable = result.getSecond().size() == 0;
+                boolean reachable = result.getFirst() != null && result.getSecond().size() == 0;
                 if (Memory.knowsDestOf(getAgentState(), packetColor) && reachable &&
                         (getAgentState().getColor().isEmpty() || getAgentState().getColor().get() == packetColor)) {
                     Memory.setTarget(getAgentState(), perc);

@@ -151,7 +151,7 @@ public class Basic {
         for (CellPerception perc: viewArea ) {
             if (perc.containsAnyDestination()) {
                 Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), perc.getX(), perc.getY(), agentState, false);
-                boolean reachable = result.getSecond().size() == 0;
+                boolean reachable = result.getFirst() != null && result.getSecond().size() == 0;
                 if (!reachable) unreachableDestinations.add(perc);
             }
         }
@@ -190,6 +190,10 @@ public class Basic {
             // we will expand each endpoint
             endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest, ignoreOutOfPerc);
             visitedDest.addAll(endPoints);
+
+            if (endPoints.isEmpty()) { // No path found
+                return new Pair<>(null, new ArrayList<>());
+            }
         }
         Node finish = foundFinish(endPoints, xDest, yDest);
 
