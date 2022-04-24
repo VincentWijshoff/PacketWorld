@@ -5,7 +5,7 @@ description "Basic behavior"
 # ------------------------------------------------
 # The amount of the behavior states the agent has
 # ------------------------------------------------
-nbStates 5                          # The basic behavior is implemented in a single state
+nbStates 6                          # The basic behavior is implemented in a single state
 
 
 # Enumeration of the behavior agent states
@@ -19,6 +19,8 @@ nbArgs 0
 nbArgs 0                            # 0 arguments required for the constructor
 5 agent.behavior.behavior.Charge
 nbArgs 0
+6 agent.behavior.behavior.UnblockDestination
+nbArgs 0
 
 
 
@@ -26,7 +28,7 @@ nbArgs 0
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 12
+nbChanges 14
 
 agent.behavior.behaviorChange.CanPickup
 nbArgs 0
@@ -99,6 +101,18 @@ nbArgs 0
 priority 1
 source 1        # Wander
 target 2        # MoveTo
+
+agent.behavior.behaviorChange.CanUnblock
+nbArgs 0
+priority 1
+source 1        # Wander
+target 6        # UnblockDestination
+
+agent.behavior.behaviorChange.CanUnblock
+nbArgs 0
+priority 1
+source 2        # MoveTo
+target 6        # UnblockDestination
 
 # ----------------
 # Further comments
