@@ -119,7 +119,7 @@ public class Basic {
      * @param agentState The agent
      * @return 2D CellPerception array relative to the agent's position.
      */
-    private static CellPerception[][] getViewArea(AgentState agentState) {
+    public static CellPerception[][] getViewArea(AgentState agentState) {
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
         int left = agentState.getPerception().getOffsetX() - agentState.getX();
         int top = agentState.getPerception().getOffsetY() - agentState.getY();
