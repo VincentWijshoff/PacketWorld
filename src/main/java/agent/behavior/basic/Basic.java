@@ -8,6 +8,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
 import environment.world.agent.AgentRep;
+import util.Pair;
 
 public class Basic {
 
@@ -162,27 +163,32 @@ public class Basic {
         }
     }
 
-    public static int[] getBestNextMove(int x, int y, int xDest, int yDest, ArrayList<Node> wallList, AgentState agentState) {
+    public static Pair<int[],ArrayList<Node>> getBestNextMove(int x, int y, int xDest, int yDest, ArrayList<Node> wallList, AgentState agentState) {
         ArrayList<Node> visitedDest = new ArrayList<>();
         visitedDest.add(new Node(x, y));
         ArrayList<Node> endPoints = new ArrayList<>();
         endPoints.add(new Node(x, y));
         // Basic breadth-first search which will give the shortest path to the destination
-        while (foundFinnish(endPoints, xDest, yDest) == null) {
+        while (foundFinish(endPoints, xDest, yDest) == null) {
             // we will expand each endpoint
             endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest);
             visitedDest.addAll(endPoints);
         }
-        Node finnish = foundFinnish(endPoints, xDest, yDest);
-        while (finnish != null && finnish.prev != null && finnish.prev.prev != null) {
-            finnish = finnish.prev;
+        Node finish = foundFinish(endPoints, xDest, yDest);
+
+        ArrayList<Node> packetsOnPath = new ArrayList<>();
+        while (finish != null && finish.prev != null && finish.prev.prev != null) {
+            finish = finish.prev;
+            if (agentState.getPerception().getCellPerceptionOnAbsPos(finish.x, finish.y).containsPacket()) {
+                packetsOnPath.add(new Node(finish.x, finish.y));  //Mark all packet locations, and pass as result
+            }
         }
 
         // the next pos should be the first one in the chain
-        return new int[]{finnish.x, finnish.y};
+        return new Pair<>(new int[]{finish.x, finish.y}, packetsOnPath);
     }
 
-    private static Node foundFinnish(List<Node> endPoints, int xDest, int yDest) {
+    private static Node foundFinish(List<Node> endPoints, int xDest, int yDest) {
         for (Node n : endPoints) {
             if (n.x == xDest && n.y == yDest) return n;
         }
@@ -231,10 +237,13 @@ public class Basic {
                             // False = cannot walk here so may not be an option
                             // True = cannot see this and not an option for next move because > 1 away, so assume is walkable
                         }
-                        if (!Objects.requireNonNull(agentState.getPerception().
-                                getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable()) return false;
+                        //Cells need to be walkable
+                        return Objects.requireNonNull(agentState.getPerception().
+                                getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable() ||
+                                Objects.requireNonNull(agentState.getPerception().
+                                        getCellPerceptionOnAbsPos(move.getX(), move.getY())).containsPacket();  //allow packet cells
 
-                        return true;
+
                     }).toList();
             // make them all into nodes
             ArrayList<Node> options = new ArrayList<>();

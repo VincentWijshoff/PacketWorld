@@ -8,6 +8,7 @@ import agent.behavior.basic.Memory;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,9 @@ public class MoveTo extends Behavior {
             nodeList.add(new Node(pos[0], pos[1]));
         }
         // now get the next best position from the optimal path
-        int[] bestPos = getBestNextMove(agentState.getX(), agentState.getY(), i, j, nodeList, agentState);
+        Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), i, j, nodeList, agentState);
+        int[] bestPos = result.first;
+        ArrayList<Node> packetsOnPath = result.second;
         agentAction.step(bestPos[0], bestPos[1]);
     }
 
