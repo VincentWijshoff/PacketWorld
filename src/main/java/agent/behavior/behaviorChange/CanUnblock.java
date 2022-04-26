@@ -23,7 +23,7 @@ public class CanUnblock extends BehaviorChange {
         ArrayList<Pair<int[], ArrayList<Basic.Node>>> results = new ArrayList<>();
         for (CellPerception[] percs: getViewArea(getAgentState())) {
             for (CellPerception perc: percs) {
-                if (perc.containsAnyDestination()) {
+                if (perc != null && perc.containsAnyDestination()) {
                     results.add(getBestNextMove(getAgentState().getX(), getAgentState().getY(), perc.getX(), perc.getY(), getAgentState(), false));
                 }
             }
@@ -49,8 +49,7 @@ public class CanUnblock extends BehaviorChange {
                 }
             }
         }
-
-
+        canUnblock = false;
     }
 
     @Override

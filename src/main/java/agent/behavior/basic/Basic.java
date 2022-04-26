@@ -222,7 +222,7 @@ public class Basic {
                                                AgentState agentState,
                                                int xDest,
                                                int yDest,
-                                               boolean ignoreOutOfPerc) {
+                                               boolean ignoreOutOfPerception) {
         ArrayList<Node> newEndPoints = new ArrayList<>();
         for (Node n : endPoints) {
             List<Coordinate> potMoves = new ArrayList<>(List.of(
@@ -254,7 +254,7 @@ public class Basic {
                             // cannot see this position
                             // we need a check for the edges off the world
                             // only if the new position is 1 away from the current position, otherwise dont care
-                            return ignoreOutOfPerc && (Math.abs(move.getX() - agentState.getX()) > 1 ||
+                            return ignoreOutOfPerception && (Math.abs(move.getX() - agentState.getX()) > 1 ||
                                     Math.abs(move.getY() - agentState.getY()) > 1);
                             // False = cannot walk here so may not be an option
                             // True = cannot see this and not an option for next move because > 1 away, so assume is walkable
@@ -262,8 +262,8 @@ public class Basic {
                         //Cells need to be walkable
                         return Objects.requireNonNull(agentState.getPerception().
                                 getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable() ||
-                                Objects.requireNonNull(agentState.getPerception().
-                                        getCellPerceptionOnAbsPos(move.getX(), move.getY())).containsPacket();  //allow packet cells
+                                (Objects.requireNonNull(agentState.getPerception().
+                                        getCellPerceptionOnAbsPos(move.getX(), move.getY())).containsPacket() && !ignoreOutOfPerception);  //allow packet cells
 
 
                     }).toList();

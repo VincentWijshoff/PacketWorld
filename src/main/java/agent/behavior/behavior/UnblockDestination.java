@@ -38,7 +38,7 @@ public class UnblockDestination extends Behavior {
         prevRecentlyVisitedList.add(new String[]{ agentState.getX() + "", agentState.getY() + "" });
         Memory.recentVisits().setAllStored(agentState, prevRecentlyVisitedList);
 
-        // Agent should move to target (this is a copy paste from MoveTo class, there is probably a cleaner way)
+        // Agent should move to target
         if (!agentState.hasCarry()) {
 
             // Pick up packet at target
