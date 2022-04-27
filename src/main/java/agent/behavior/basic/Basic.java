@@ -7,7 +7,9 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
+import environment.world.agent.Agent;
 import environment.world.agent.AgentRep;
+import environment.world.wall.WallRep;
 import util.Pair;
 
 public class Basic {
@@ -138,8 +140,7 @@ public class Basic {
     public static void storeView(AgentState agentState) {
         List<CellPerception> viewArea = new ArrayList<>();
         for (CellPerception[] c1 : getViewArea(agentState)) {
-            for (CellPerception c2 : c1)
-                viewArea.add(c2);
+            viewArea.addAll(Arrays.asList(c1));
         }
         // Don't add agent itself to memory
         viewArea.remove(agentState.getPerception().getCellAt(agentState.getX(), agentState.getY()));
@@ -157,8 +158,39 @@ public class Basic {
         }
         viewArea.removeAll(unreachableDestinations);
 
+        viewArea.addAll(storeOutOfBounds(agentState));
+
         Memory.addAll(agentState, viewArea);
         // Memory.printMemory(agentState);
+    }
+
+    private static List<CellPerception> storeOutOfBounds(AgentState agentState) {
+        //This only happens for the right side of the world, because I am lazy
+        //Left and top side of the world is already checked with a < 0 check in getBestStep
+        ArrayList<CellPerception> outOfBounds = new ArrayList<>();
+        Perception perc = agentState.getPerception();
+        if (perc.getSelfX() > (perc.getWidth()-1)/2) {
+            int relX = perc.getWidth() - perc.getSelfX();
+            for (int i = 0; i < perc.getHeight(); i++) {
+                int relY = i - perc.getSelfY();
+                if (perc.getCellPerceptionOnRelPos(relX, relY) == null && perc.getCellPerceptionOnRelPos(relX-1, relY) != null && !perc.getCellPerceptionOnRelPos(relX -1 , relY).containsWall()) {
+                    for (int j = 0; j < perc.getHeight(); j++) {
+                        int absY = j - perc.getSelfY() + agentState.getY();
+                        int absX = relX + agentState.getX();
+                        CellPerception cellPerception = new CellPerception(absX, absY);
+                        cellPerception.addRep(new WallRep(absX, absY) {
+                            @Override
+                            public boolean isSeeThrough() {
+                                return false;
+                            }
+                        });
+                        outOfBounds.add(cellPerception);
+                    }
+                    break;
+                }
+            }
+        }
+        return outOfBounds;
     }
 
 
