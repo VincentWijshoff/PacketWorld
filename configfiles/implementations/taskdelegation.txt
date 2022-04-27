@@ -3,7 +3,7 @@ description "Behaviour for the task-delegation environment"
 # ------------------------------------------------
 # The amount of the behavior states the agent has
 # ------------------------------------------------
-nbStates 6                          # The basic behavior is implemented in a single state
+nbStates 5                          # The basic behavior is implemented in a single state
 
 
 # Enumeration of the behavior agent states
@@ -15,9 +15,7 @@ nbArgs 0
 nbArgs 0
 4 agent.behavior.behavior.ReleasePacket
 nbArgs 0                            # 0 arguments required for the constructor
-5 agent.behavior.behavior.Charge
-nbArgs 0
-6 agent.behavior.behavior.UnblockDestination
+5 agent.behavior.behavior.UnblockDestination
 nbArgs 0
 
 
@@ -26,7 +24,7 @@ nbArgs 0
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 15
+nbChanges 11
 
 agent.behavior.behaviorChange.CanPickup
 nbArgs 0
@@ -76,46 +74,22 @@ priority 0
 source 1        # Wander
 target 2        # MoveTo
 
-agent.behavior.behaviorChange.CanCharge
-nbArgs 0
-priority 1
-source 2        # MoveTo
-target 5        # Charge
-
-agent.behavior.behaviorChange.DoneCharging
-nbArgs 0
-priority 0
-source 5        # Charge
-target 1        # Wander
-
-agent.behavior.behaviorChange.NeedsToCharge
-nbArgs 0
-priority 1
-source 2        # MoveTo
-target 2        # MoveTo
-
-agent.behavior.behaviorChange.NeedsToCharge
-nbArgs 0
-priority 1
-source 1        # Wander
-target 2        # MoveTo
-
 agent.behavior.behaviorChange.CanUnblock
 nbArgs 0
 priority 1
 source 1        # Wander
-target 6        # UnblockDestination
+target 5        # UnblockDestination
 
 agent.behavior.behaviorChange.CanUnblock
 nbArgs 0
 priority 1
 source 2        # MoveTo
-target 6        # UnblockDestination
+target 5        # UnblockDestination
 
 agent.behavior.behaviorChange.HasUnblocked
 nbArgs 0
 priority 0
-source 6        # UnblockDestination
+source 5        # UnblockDestination
 target 1        # Wander
 
 # ----------------
