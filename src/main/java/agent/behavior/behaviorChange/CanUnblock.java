@@ -16,9 +16,12 @@ import static agent.behavior.basic.Basic.getViewArea;
 public class CanUnblock extends BehaviorChange {
 
     boolean canUnblock = false;
+    boolean hasCarry = false;
 
     @Override
     public void updateChange() {
+        hasCarry = getAgentState().hasCarry();
+
         //scan perception for blocked destinations
         ArrayList<Pair<int[], ArrayList<Basic.Node>>> results = new ArrayList<>();
         for (CellPerception[] percs: getViewArea(getAgentState())) {
@@ -54,6 +57,6 @@ public class CanUnblock extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return canUnblock;
+        return canUnblock && !hasCarry;
     }
 }
