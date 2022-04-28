@@ -248,6 +248,18 @@ public class Basic {
         return null;
     }
 
+    public static void moveTo(AgentState agentState, AgentAction agentAction, int[] target) {
+        Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), target[0], target[1], agentState, true);
+        int[] bestPos = result.first;
+        ArrayList<Node> packetsOnPath = result.second;
+        if (bestPos == null) {
+            agentAction.skip();
+        }
+        else {
+            agentAction.step(bestPos[0], bestPos[1]);
+        }
+    }
+
     private static ArrayList<Node> getBestStep(List<Node> endPoints,
                                           ArrayList<Node> wallList,
                                           ArrayList<Node> visitedDest,
@@ -280,6 +292,7 @@ public class Basic {
                         }
                         // negative positions
                         if (move.getX() < 0 || move.getY() < 0) return false;
+                        if (move.getX() > 30 || move.getY() > 30) return false; //We assume there is no world larger than 30x30
 
                         // check if it is actually walkable (if we can see it)
                         if (agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY()) == null) {

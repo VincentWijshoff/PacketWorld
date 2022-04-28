@@ -38,20 +38,7 @@ public class MoveTo extends Behavior {
         this.x = target[0];
         this.y = target[1];
 
-        this.moveTo(this.x, this.y, agentState, agentAction);
-    }
-
-    private void moveTo(int i, int j, AgentState agentState, AgentAction agentAction) {
-        // we need to find a path from the current position to the given destination keeping into account the walls
-        // if no walls in memory, just take the next best step
-        // calculate the optimal path and fetch the best next step
-        // first add all walls as nodes
-
-        // now get the next best position from the optimal path
-        Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), i, j, agentState, true);
-        int[] bestPos = result.first;
-        ArrayList<Node> packetsOnPath = result.second;
-        agentAction.step(bestPos[0], bestPos[1]);
+        moveTo(agentState, agentAction, new int[] {this.x, this.y});
     }
 
     private void moveToBestPosition(int i, int j, AgentState agentState, AgentAction agentAction) {

@@ -70,10 +70,4 @@ public class UnblockDestination extends Behavior {
 
     }
 
-    private void moveTo(AgentState agentState, AgentAction agentAction, int[] target) {
-        Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), target[0], target[1], agentState, true);
-        int[] bestPos = result.first;
-        ArrayList<Node> packetsOnPath = result.second;
-        agentAction.step(bestPos[0], bestPos[1]);
-    }
 }
