@@ -16,37 +16,36 @@ import static agent.behavior.basic.Basic.getViewArea;
 public class CanUnblock extends BehaviorChange {
 
     boolean canUnblock = false;
-    boolean hasCarry = false;
 
     @Override
     public void updateChange() {
-        hasCarry = getAgentState().hasCarry();
-
-        //scan perception for blocked destinations
-        ArrayList<Pair<int[], ArrayList<Basic.Node>>> results = new ArrayList<>();
-        for (CellPerception[] percs: getViewArea(getAgentState())) {
-            for (CellPerception perc: percs) {
-                if (perc != null && perc.containsAnyDestination()) {
-                    results.add(getBestNextMove(getAgentState().getX(), getAgentState().getY(), perc.getX(), perc.getY(), getAgentState(), false));
+        if (!getAgentState().hasCarry()) {
+            //scan perception for blocked destinations
+            ArrayList<Pair<int[], ArrayList<Basic.Node>>> results = new ArrayList<>();
+            for (CellPerception[] percs: getViewArea(getAgentState())) {
+                for (CellPerception perc: percs) {
+                    if (perc != null && perc.containsAnyDestination()) {
+                        results.add(getBestNextMove(getAgentState().getX(), getAgentState().getY(), perc.getX(), perc.getY(), getAgentState(), false));
+                    }
                 }
             }
-        }
 
-        for (Pair<int[], ArrayList<Basic.Node>> result : results) {
-            boolean reachable = result.getFirst() != null && result.getSecond().size() == 0;
-            ArrayList<Basic.Node> packets = result.getSecond();
-            if (!reachable) {
-                //check if blocking packet is correct color
-                for (Basic.Node packet: packets) {
-                    PacketRep packetRep = getAgentState().getPerception().getCellPerceptionOnAbsPos(packet.x, packet.y).getRepOfType(PacketRep.class);
-                    if (getAgentState().getColor().isEmpty() || getAgentState().getColor().get() == packetRep.getColor()) {
-                        //check if blocking packet is reachable
-                        Pair<int[], ArrayList<Basic.Node>> resultPacket = getBestNextMove(getAgentState().getX(), getAgentState().getY(), packet.x, packet.y, getAgentState(), false);
-                        if (resultPacket.getFirst() != null && resultPacket.getSecond().size() == 0) {
-                            //enter Unblock state, with target packet location
-                            Memory.setTarget(getAgentState(), new CellPerception(packet.x, packet.y));
-                            canUnblock = true;
-                            return;
+            for (Pair<int[], ArrayList<Basic.Node>> result : results) {
+                boolean reachable = result.getFirst() != null && result.getSecond().size() == 0;
+                ArrayList<Basic.Node> packets = result.getSecond();
+                if (!reachable) {
+                    //check if blocking packet is correct color
+                    for (Basic.Node packet: packets) {
+                        PacketRep packetRep = getAgentState().getPerception().getCellPerceptionOnAbsPos(packet.x, packet.y).getRepOfType(PacketRep.class);
+                        if (getAgentState().getColor().isEmpty() || getAgentState().getColor().get() == packetRep.getColor()) {
+                            //check if blocking packet is reachable
+                            Pair<int[], ArrayList<Basic.Node>> resultPacket = getBestNextMove(getAgentState().getX(), getAgentState().getY(), packet.x, packet.y, getAgentState(), false);
+                            if (resultPacket.getFirst() != null && resultPacket.getSecond().size() == 0) {
+                                //enter Unblock state, with target packet location
+                                Memory.setTarget(getAgentState(), new CellPerception(packet.x, packet.y));
+                                canUnblock = true;
+                                return;
+                            }
                         }
                     }
                 }
@@ -57,6 +56,6 @@ public class CanUnblock extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return canUnblock && !hasCarry;
+        return canUnblock;
     }
 }
