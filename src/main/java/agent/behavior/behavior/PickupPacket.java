@@ -20,6 +20,7 @@ public class PickupPacket extends Behavior {
         int[] target = Objects.requireNonNull(Memory.getTarget(agentState));
         try{
             agentAction.pickPacket(target[0], target[1]);
+            Memory.clearedPackets().add(agentState, agentState.getPerception().getCellPerceptionOnAbsPos(target[0], target[1]));
         }catch (Exception e){
             agentAction.skip();
         }
