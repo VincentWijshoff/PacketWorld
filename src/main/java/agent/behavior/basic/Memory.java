@@ -159,7 +159,6 @@ public class Memory {
             // Add the cell to the existing list of this memory fragment, if it is not in memory yet.
             else {
                 if (rawData.contains(newCell)) return;
-                else if (getMemory(agentState).contains(newCell)) removeFromMemory(agentState, newCell);
 
                 agentState.addMemoryFragment(memoryFragment, rawData + newCell);
             }

@@ -26,10 +26,14 @@ public class CanUnblock extends BehaviorChange {
             List<String[]> clearedPackets = Memory.clearedPackets().getAllStored(getAgentState());
             for (String[] blockingPacket : Memory.blockingPackets().getAllStored(getAgentState())) {
                 //if packet of correct color in memory, and not in clearedPackets
-                if ( blockingPacket[2].equals(MyColor.getName(getAgentState().getColor().get())) && !clearedPackets.contains(blockingPacket)) {
-                    Memory.setTarget(getAgentState(), new CellPerception(Integer.parseInt(blockingPacket[0]), Integer.parseInt(blockingPacket[1])));
-                    canUnblock = true;
-                    return;
+                if ( blockingPacket[2].equals(MyColor.getName(getAgentState().getColor().get()))) {
+                    if (!clearedPackets.stream().anyMatch(clearedPacket -> {
+                        return clearedPacket[0].equals(blockingPacket[0]) && clearedPacket[1].equals(blockingPacket[1]) && clearedPacket[2].equals(blockingPacket[2]);
+                    })) {
+                        Memory.setTarget(getAgentState(), new CellPerception(Integer.parseInt(blockingPacket[0]), Integer.parseInt(blockingPacket[1])));
+                        canUnblock = true;
+                        return;
+                    }
                 }
             }
 
