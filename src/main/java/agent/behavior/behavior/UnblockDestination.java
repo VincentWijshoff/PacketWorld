@@ -59,11 +59,23 @@ public class UnblockDestination extends Behavior {
 
         else {
             // 'Move away' (<- how do we choose this?)
-            if (Math.abs(target[0] - agentState.getX()) <= 1 && Math.abs(target[1] - agentState.getY()) <= 1) {
-                Memory.setTarget(agentState, new int[] {-1,-1}); // This is not a good solution
-                agentAction.putPacket(target[0], target[1]);
-            }
             // Then drop packet somewhere random
+
+            if (Math.abs(target[0] - agentState.getX()) <= 1 && Math.abs(target[1] - agentState.getY()) <= 1) {
+                if (agentState.getPerception().getCellPerceptionOnAbsPos(target[0], target[1]).isFree()) {
+                    agentAction.putPacket(target[0], target[1]);
+                    Memory.setTarget(agentState, new int[]{-1, -1}); // This is not a good solution
+                }
+                else {
+                    for (CellPerception neighbour : agentState.getPerception().getNeighbours()) {
+                        if (neighbour.isFree()) {
+                            agentAction.putPacket(target[0], target[1]);
+                            Memory.setTarget(agentState, new int[]{-1, -1}); // This is not a good solution
+                            break;
+                        }
+                    }
+                }
+            }
             else{
                 moveTo(agentState, agentAction, target);
             }
