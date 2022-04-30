@@ -19,8 +19,8 @@ public class Basic {
     public static boolean optimization3 = true; // don't go back to recently visited positions
 
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
-        // broadcast charger locations
 
+        // broadcast charger locations
         Set<String> keys = agentState.getMemoryFragmentKeys();
         if (keys.contains(Memory.MemKey.CHARGERS.toString())) {
             String message = Memory.MemKey.CHARGERS + "=" + agentState.getMemoryFragment(Memory.MemKey.CHARGERS.toString());
@@ -32,13 +32,12 @@ public class Basic {
         //send to all agent reps
         for (CellPerception perc:perceptions) {
             AgentRep agent = perc.getAgentRepresentation().get();
-            if (keys.contains(Memory.MemKey.DESTINATIONS.toString())) {
-                    String message = Memory.MemKey.DESTINATIONS + "=" + agentState.getMemoryFragment(Memory.MemKey.DESTINATIONS.toString());
+
+            for (Memory.MemKey memkey: new Memory.MemKey[] {Memory.MemKey.DESTINATIONS, Memory.MemKey.WALLS, Memory.MemKey.BLOCKING_PACKETS, Memory.MemKey.CLEARED_PACKETS}) {
+                if (keys.contains(memkey.toString())) {
+                    String message = memkey + "=" + agentState.getMemoryFragment(memkey.toString());
                     agentCommunication.sendMessage(agent, message);
-            }
-            if (keys.contains(Memory.MemKey.WALLS.toString())) {
-                String message = Memory.MemKey.WALLS + "=" + agentState.getMemoryFragment(Memory.MemKey.WALLS.toString());
-                agentCommunication.sendMessage(agent, message);
+                }
             }
         }
 

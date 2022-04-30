@@ -4,6 +4,8 @@ import agent.AgentState;
 import com.google.common.collect.Table;
 import environment.CellPerception;
 import environment.world.destination.DestinationRep;
+import environment.world.packet.Packet;
+import environment.world.packet.PacketRep;
 import util.MyColor;
 
 import java.awt.*;
@@ -24,6 +26,8 @@ public class Memory {
         TARGET, // kept separate, not in mem-map
         RECENTLY_VISITED, // optimization3
         DEFAULT, // Packets, other agents, ...
+        BLOCKING_PACKETS,
+        CLEARED_PACKETS
     }
     public static MemoryFragment air() { return mem.get(MemKey.AIR); }
     public static MemoryFragment walls() { return mem.get(MemKey.WALLS); }
@@ -31,6 +35,9 @@ public class Memory {
     public static MemoryFragment destinations() { return mem.get(MemKey.DESTINATIONS); }
     public static MemoryFragment recentVisits() { return mem.get(MemKey.RECENTLY_VISITED); }
     public static MemoryFragment defaults() { return mem.get(MemKey.DEFAULT); }
+    public static MemoryFragment blockingPackets() { return mem.get(MemKey.BLOCKING_PACKETS); }
+    public static MemoryFragment clearedPackets() { return mem.get(MemKey.CLEARED_PACKETS); }
+
 
     public static MemKey getKey(String key) { return MemKey.valueOf(key); }
     public static MemoryFragment getFragment(String fragment) { return mem.get(getKey(fragment)); }
@@ -70,6 +77,20 @@ public class Memory {
         put(MemKey.RECENTLY_VISITED, new MemoryFragment(MemKey.RECENTLY_VISITED) {
         });
         put(MemKey.DEFAULT, new MemoryFragment(MemKey.DEFAULT) {
+        });
+        put(MemKey.BLOCKING_PACKETS, new MemoryFragment(MemKey.BLOCKING_PACKETS) {
+            @Override
+            public String encode(CellPerception cell) {
+                PacketRep packet = cell.getRepOfType(PacketRep.class);
+                return encode(new String[]{ Integer.toString(cell.getX()), Integer.toString(cell.getY()), MyColor.getName(packet.getColor()) });
+            }
+        });
+        put(MemKey.CLEARED_PACKETS, new MemoryFragment(MemKey.CLEARED_PACKETS) {
+            @Override
+            public String encode(CellPerception cell) {
+                PacketRep packet = cell.getRepOfType(PacketRep.class);
+                return encode(new String[]{ Integer.toString(cell.getX()), Integer.toString(cell.getY()), MyColor.getName(packet.getColor()) });
+            }
         });
     }};
 
