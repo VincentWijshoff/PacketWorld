@@ -5,10 +5,12 @@ import agent.behavior.basic.Basic;
 import agent.behavior.basic.Memory;
 import environment.CellPerception;
 import environment.world.packet.PacketRep;
+import util.MyColor;
 import util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static agent.behavior.basic.Basic.getBestNextMove;
 import static agent.behavior.basic.Basic.getViewArea;
@@ -20,6 +22,18 @@ public class CanUnblock extends BehaviorChange {
     @Override
     public void updateChange() {
         if (!getAgentState().hasCarry()) {
+
+            List<String[]> clearedPackets = Memory.clearedPackets().getAllStored(getAgentState());
+            for (String[] blockingPacket : Memory.blockingPackets().getAllStored(getAgentState())) {
+                //if packet of correct color in memory, and not in clearedPackets
+                if ( blockingPacket[2].equals(MyColor.getName(getAgentState().getColor().get())) && !clearedPackets.contains(blockingPacket)) {
+                    Memory.setTarget(getAgentState(), new CellPerception(Integer.parseInt(blockingPacket[0]), Integer.parseInt(blockingPacket[1])));
+                    canUnblock = true;
+                    return;
+                }
+            }
+
+
             //scan perception for blocked destinations
             ArrayList<Pair<int[], ArrayList<Basic.Node>>> results = new ArrayList<>();
             for (CellPerception[] percs: getViewArea(getAgentState())) {

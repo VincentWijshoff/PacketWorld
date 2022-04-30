@@ -45,6 +45,9 @@ public class UnblockDestination extends Behavior {
             if (Math.abs(target[0] - agentState.getX()) <= 1 && Math.abs(target[1] - agentState.getY()) <= 1) {
                 agentAction.pickPacket(target[0], target[1]);
 
+                CellPerception clearedPacket = agentState.getPerception().getCellPerceptionOnAbsPos(target[0], target[1]);
+                Memory.clearedPackets().add(agentState, clearedPacket);
+
                 String[] furthestVisit = prevRecentlyVisitedList.get(0);
                 Memory.setTarget(agentState, new int[] {Integer.parseInt(furthestVisit[0]), Integer.parseInt(furthestVisit[1])});
             }
