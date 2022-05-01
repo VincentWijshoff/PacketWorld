@@ -68,7 +68,7 @@ public class UnblockDestination extends Behavior {
                 }
                 else {
                     for (CellPerception neighbour : agentState.getPerception().getNeighbours()) {
-                        if (neighbour.isFree()) {
+                        if (neighbour != null && neighbour.isFree()) {
                             agentAction.putPacket(target[0], target[1]);
                             Memory.setTarget(agentState, new int[]{-1, -1}); // This is not a good solution
                             break;
