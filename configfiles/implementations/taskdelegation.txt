@@ -76,13 +76,13 @@ target 2        # MoveTo
 
 agent.behavior.behaviorChange.CanUnblock
 nbArgs 0
-priority 1
+priority 2
 source 1        # Wander
 target 5        # UnblockDestination
 
 agent.behavior.behaviorChange.CanUnblock
 nbArgs 0
-priority 1
+priority 2
 source 2        # MoveTo
 target 5        # UnblockDestination
 

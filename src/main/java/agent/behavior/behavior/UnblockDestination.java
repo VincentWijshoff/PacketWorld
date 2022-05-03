@@ -16,6 +16,9 @@ import static agent.behavior.basic.Basic.*;
 import static agent.behavior.basic.Basic.dropPacketIfDying;
 
 public class UnblockDestination extends Behavior {
+
+    private boolean first = false;
+
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         communicateInfo(agentState, agentCommunication);
@@ -24,6 +27,17 @@ public class UnblockDestination extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        if (first) {
+            first = false;
+            if (agentState.hasCarry()) {
+                for (CellPerception neighbour : agentState.getPerception().getNeighbours()) {
+                    if (neighbour != null && neighbour.isFree()) {
+                        agentAction.putPacket(neighbour.getX(), neighbour.getY());
+                        break;
+                    }
+                }
+            }
+        }
 
         if (optimization2) {
             storeView(agentState);
@@ -64,17 +78,17 @@ public class UnblockDestination extends Behavior {
             if (Math.abs(target[0] - agentState.getX()) <= 1 && Math.abs(target[1] - agentState.getY()) <= 1) {
                 if (agentState.getPerception().getCellPerceptionOnAbsPos(target[0], target[1]).isFree()) {
                     agentAction.putPacket(target[0], target[1]);
-                    Memory.setTarget(agentState, new int[]{-1, -1}); // This is not a good solution
                 }
                 else {
                     for (CellPerception neighbour : agentState.getPerception().getNeighbours()) {
                         if (neighbour != null && neighbour.isFree()) {
-                            agentAction.putPacket(target[0], target[1]);
-                            Memory.setTarget(agentState, new int[]{-1, -1}); // This is not a good solution
+                            agentAction.putPacket(neighbour.getX(), neighbour.getY());
                             break;
                         }
                     }
                 }
+                Memory.setTarget(agentState, new int[]{-1, -1}); // This is not a good solution
+                first = true;
             }
             else{
                 moveTo(agentState, agentAction, target);
