@@ -196,7 +196,6 @@ public class Basic {
                     for (int j = 0; j < perc.getWidth(); j++) {
                         int absX = j - perc.getSelfX() + agentState.getX();
                         int absY = relY + agentState.getY();
-                        System.out.println(absX+";"+absY);
                         CellPerception cellPerception = new CellPerception(absX, absY);
                         cellPerception.addRep(new WallRep(absX, absY) {
                             @Override
