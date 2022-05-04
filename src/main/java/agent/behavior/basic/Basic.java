@@ -164,7 +164,6 @@ public class Basic {
     }
 
     private static List<CellPerception> storeOutOfBounds(AgentState agentState) {
-        //This only happens for the right side of the world, because I am lazy
         //Left and top side of the world is already checked with a < 0 check in getBestStep
         ArrayList<CellPerception> outOfBounds = new ArrayList<>();
         Perception perc = agentState.getPerception();
@@ -176,6 +175,28 @@ public class Basic {
                     for (int j = 0; j < perc.getHeight(); j++) {
                         int absY = j - perc.getSelfY() + agentState.getY();
                         int absX = relX + agentState.getX();
+                        CellPerception cellPerception = new CellPerception(absX, absY);
+                        cellPerception.addRep(new WallRep(absX, absY) {
+                            @Override
+                            public boolean isSeeThrough() {
+                                return false;
+                            }
+                        });
+                        outOfBounds.add(cellPerception);
+                    }
+                    break;
+                }
+            }
+        }
+        if (perc.getSelfY() > (perc.getHeight()-1)/2) {
+            int relY = perc.getHeight() - perc.getSelfY();
+            for (int i = 0; i < perc.getWidth(); i++) {
+                int relX = i - perc.getSelfX();
+                if (perc.getCellPerceptionOnRelPos(relX, relY) == null && perc.getCellPerceptionOnRelPos(relX, relY-1) != null && !perc.getCellPerceptionOnRelPos(relX, relY-1).containsWall()) {
+                    for (int j = 0; j < perc.getWidth(); j++) {
+                        int absX = j - perc.getSelfX() + agentState.getX();
+                        int absY = relY + agentState.getY();
+                        System.out.println(absX+";"+absY);
                         CellPerception cellPerception = new CellPerception(absX, absY);
                         cellPerception.addRep(new WallRep(absX, absY) {
                             @Override
