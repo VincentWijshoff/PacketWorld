@@ -90,6 +90,7 @@ public class Wander extends Behavior {
                 return;
             }
         }
+        agentAction.skip();
     }
 
     private void prioritizeC1(List<Coordinate> moves, Coordinate c1, Coordinate c2) {

@@ -1,6 +1,5 @@
-description "Basic behavior"
+description "Behavior for the basic and energy environments"
 
-# Todo, update / check this
 
 # ------------------------------------------------
 # The amount of the behavior states the agent has

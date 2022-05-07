@@ -7,7 +7,10 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.*;
+import environment.world.agent.Agent;
 import environment.world.agent.AgentRep;
+import environment.world.wall.WallRep;
+import util.Pair;
 
 public class Basic {
 
@@ -16,8 +19,8 @@ public class Basic {
     public static boolean optimization3 = true; // don't go back to recently visited positions
 
     public static void communicateInfo(AgentState agentState, AgentCommunication agentCommunication){
-        // broadcast charger locations
 
+        // broadcast charger locations
         Set<String> keys = agentState.getMemoryFragmentKeys();
         if (keys.contains(Memory.MemKey.CHARGERS.toString())) {
             String message = Memory.MemKey.CHARGERS + "=" + agentState.getMemoryFragment(Memory.MemKey.CHARGERS.toString());
@@ -29,13 +32,12 @@ public class Basic {
         //send to all agent reps
         for (CellPerception perc:perceptions) {
             AgentRep agent = perc.getAgentRepresentation().get();
-            if (keys.contains(Memory.MemKey.DESTINATIONS.toString())) {
-                    String message = Memory.MemKey.DESTINATIONS + "=" + agentState.getMemoryFragment(Memory.MemKey.DESTINATIONS.toString());
+
+            for (Memory.MemKey memkey: new Memory.MemKey[] {Memory.MemKey.DESTINATIONS, Memory.MemKey.WALLS, Memory.MemKey.BLOCKING_PACKETS, Memory.MemKey.CLEARED_PACKETS}) {
+                if (keys.contains(memkey.toString())) {
+                    String message = memkey + "=" + agentState.getMemoryFragment(memkey.toString());
                     agentCommunication.sendMessage(agent, message);
-            }
-            if (keys.contains(Memory.MemKey.WALLS.toString())) {
-                String message = Memory.MemKey.WALLS + "=" + agentState.getMemoryFragment(Memory.MemKey.WALLS.toString());
-                agentCommunication.sendMessage(agent, message);
+                }
             }
         }
 
@@ -118,7 +120,7 @@ public class Basic {
      * @param agentState The agent
      * @return 2D CellPerception array relative to the agent's position.
      */
-    private static CellPerception[][] getViewArea(AgentState agentState) {
+    public static CellPerception[][] getViewArea(AgentState agentState) {
         CellPerception[][] perceptionList = new CellPerception[agentState.getPerception().getWidth()][agentState.getPerception().getHeight()];
         int left = agentState.getPerception().getOffsetX() - agentState.getX();
         int top = agentState.getPerception().getOffsetY() - agentState.getY();
@@ -137,16 +139,77 @@ public class Basic {
     public static void storeView(AgentState agentState) {
         List<CellPerception> viewArea = new ArrayList<>();
         for (CellPerception[] c1 : getViewArea(agentState)) {
-            for (CellPerception c2 : c1)
-                viewArea.add(c2);
+            viewArea.addAll(Arrays.asList(c1));
         }
         // Don't add agent itself to memory
         viewArea.remove(agentState.getPerception().getCellAt(agentState.getX(), agentState.getY()));
         // Don't add null-cells
         viewArea.removeAll(Collections.singleton(null));
 
+        // Don't add unreachable destinations
+        Collection<CellPerception> unreachableDestinations = new ArrayList<>();
+        for (CellPerception perc: viewArea ) {
+            if (perc.containsAnyDestination()) {
+                Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), perc.getX(), perc.getY(), agentState, false);
+                boolean reachable = result.getFirst() != null && result.getSecond().size() == 0;
+                if (!reachable) unreachableDestinations.add(perc);
+            }
+        }
+        viewArea.removeAll(unreachableDestinations);
+
+        viewArea.addAll(storeOutOfBounds(agentState));
+
         Memory.addAll(agentState, viewArea);
         // Memory.printMemory(agentState);
+    }
+
+    private static List<CellPerception> storeOutOfBounds(AgentState agentState) {
+        //Left and top side of the world is already checked with a < 0 check in getBestStep
+        ArrayList<CellPerception> outOfBounds = new ArrayList<>();
+        Perception perc = agentState.getPerception();
+        if (perc.getSelfX() > (perc.getWidth()-1)/2) {
+            int relX = perc.getWidth() - perc.getSelfX();
+            for (int i = 0; i < perc.getHeight(); i++) {
+                int relY = i - perc.getSelfY();
+                if (perc.getCellPerceptionOnRelPos(relX, relY) == null && perc.getCellPerceptionOnRelPos(relX-1, relY) != null && !perc.getCellPerceptionOnRelPos(relX -1 , relY).containsWall()) {
+                    for (int j = 0; j < perc.getHeight(); j++) {
+                        int absY = j - perc.getSelfY() + agentState.getY();
+                        int absX = relX + agentState.getX();
+                        CellPerception cellPerception = new CellPerception(absX, absY);
+                        cellPerception.addRep(new WallRep(absX, absY) {
+                            @Override
+                            public boolean isSeeThrough() {
+                                return false;
+                            }
+                        });
+                        outOfBounds.add(cellPerception);
+                    }
+                    break;
+                }
+            }
+        }
+        if (perc.getSelfY() > (perc.getHeight()-1)/2) {
+            int relY = perc.getHeight() - perc.getSelfY();
+            for (int i = 0; i < perc.getWidth(); i++) {
+                int relX = i - perc.getSelfX();
+                if (perc.getCellPerceptionOnRelPos(relX, relY) == null && perc.getCellPerceptionOnRelPos(relX, relY-1) != null && !perc.getCellPerceptionOnRelPos(relX, relY-1).containsWall()) {
+                    for (int j = 0; j < perc.getWidth(); j++) {
+                        int absX = j - perc.getSelfX() + agentState.getX();
+                        int absY = relY + agentState.getY();
+                        CellPerception cellPerception = new CellPerception(absX, absY);
+                        cellPerception.addRep(new WallRep(absX, absY) {
+                            @Override
+                            public boolean isSeeThrough() {
+                                return false;
+                            }
+                        });
+                        outOfBounds.add(cellPerception);
+                    }
+                    break;
+                }
+            }
+        }
+        return outOfBounds;
     }
 
 
@@ -162,31 +225,58 @@ public class Basic {
         }
     }
 
-    public static int[] getBestNextMove(int x, int y, int xDest, int yDest, ArrayList<Node> wallList, AgentState agentState) {
+    public static Pair<int[],ArrayList<Node>> getBestNextMove(int x, int y, int xDest, int yDest, AgentState agentState, boolean ignoreOutOfPerc) {
         ArrayList<Node> visitedDest = new ArrayList<>();
         visitedDest.add(new Node(x, y));
         ArrayList<Node> endPoints = new ArrayList<>();
         endPoints.add(new Node(x, y));
-        // Basic breadth-first search which will give the shortest path to the destination
-        while (foundFinnish(endPoints, xDest, yDest) == null) {
-            // we will expand each endpoint
-            endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest);
-            visitedDest.addAll(endPoints);
+
+        ArrayList<Node> wallList = new ArrayList<>();
+        for (int[] pos : Memory.walls().getAllStoredPos(agentState)) {
+            wallList.add(new Node(pos[0], pos[1]));
         }
-        Node finnish = foundFinnish(endPoints, xDest, yDest);
-        while (finnish != null && finnish.prev != null && finnish.prev.prev != null) {
-            finnish = finnish.prev;
+
+        // Basic breadth-first search which will give the shortest path to the destination
+        while (foundFinish(endPoints, xDest, yDest) == null) {
+            // we will expand each endpoint
+            endPoints = getBestStep(endPoints, wallList, visitedDest, agentState, xDest, yDest, ignoreOutOfPerc);
+            visitedDest.addAll(endPoints);
+
+            if (endPoints.isEmpty()) { // No path found
+                return new Pair<>(null, new ArrayList<>());
+            }
+        }
+        Node finish = foundFinish(endPoints, xDest, yDest);
+
+        ArrayList<Node> packetsOnPath = new ArrayList<>();
+        while (finish != null && finish.prev != null && finish.prev.prev != null) {
+            finish = finish.prev;
+            if (agentState.getPerception().getCellPerceptionOnAbsPos(finish.x, finish.y) != null && agentState.getPerception().getCellPerceptionOnAbsPos(finish.x, finish.y).containsPacket()) {
+                packetsOnPath.add(new Node(finish.x, finish.y));  //Mark all packet locations, and pass as result
+            }
         }
 
         // the next pos should be the first one in the chain
-        return new int[]{finnish.x, finnish.y};
+        return new Pair<>(new int[]{finish.x, finish.y}, packetsOnPath);
     }
 
-    private static Node foundFinnish(List<Node> endPoints, int xDest, int yDest) {
+    private static Node foundFinish(List<Node> endPoints, int xDest, int yDest) {
         for (Node n : endPoints) {
             if (n.x == xDest && n.y == yDest) return n;
         }
         return null;
+    }
+
+    public static void moveTo(AgentState agentState, AgentAction agentAction, int[] target) {
+        Pair<int[], ArrayList<Node>> result = getBestNextMove(agentState.getX(), agentState.getY(), target[0], target[1], agentState, true);
+        int[] bestPos = result.first;
+        ArrayList<Node> packetsOnPath = result.second;
+        if (bestPos == null) {
+            agentAction.skip();
+        }
+        else {
+            agentAction.step(bestPos[0], bestPos[1]);
+        }
     }
 
     private static ArrayList<Node> getBestStep(List<Node> endPoints,
@@ -194,7 +284,8 @@ public class Basic {
                                           ArrayList<Node> visitedDest,
                                                AgentState agentState,
                                                int xDest,
-                                               int yDest) {
+                                               int yDest,
+                                               boolean ignoreOutOfPerception) {
         ArrayList<Node> newEndPoints = new ArrayList<>();
         for (Node n : endPoints) {
             List<Coordinate> potMoves = new ArrayList<>(List.of(
@@ -220,21 +311,25 @@ public class Basic {
                         }
                         // negative positions
                         if (move.getX() < 0 || move.getY() < 0) return false;
+                        if (move.getX() > 30 || move.getY() > 30) return false; //We assume there is no world larger than 30x30
 
                         // check if it is actually walkable (if we can see it)
                         if (agentState.getPerception().getCellPerceptionOnAbsPos(move.getX(), move.getY()) == null) {
                             // cannot see this position
                             // we need a check for the edges off the world
                             // only if the new position is 1 away from the current position, otherwise dont care
-                            return Math.abs(move.getX() - agentState.getX()) > 1 ||
-                                    Math.abs(move.getY() - agentState.getY()) > 1;
+                            return ignoreOutOfPerception && (Math.abs(move.getX() - agentState.getX()) > 1 ||
+                                    Math.abs(move.getY() - agentState.getY()) > 1);
                             // False = cannot walk here so may not be an option
                             // True = cannot see this and not an option for next move because > 1 away, so assume is walkable
                         }
-                        if (!Objects.requireNonNull(agentState.getPerception().
-                                getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable()) return false;
+                        //Cells need to be walkable
+                        return Objects.requireNonNull(agentState.getPerception().
+                                getCellPerceptionOnAbsPos(move.getX(), move.getY())).isWalkable() ||
+                                (Objects.requireNonNull(agentState.getPerception().
+                                        getCellPerceptionOnAbsPos(move.getX(), move.getY())).containsPacket() && !ignoreOutOfPerception);  //allow packet cells
 
-                        return true;
+
                     }).toList();
             // make them all into nodes
             ArrayList<Node> options = new ArrayList<>();

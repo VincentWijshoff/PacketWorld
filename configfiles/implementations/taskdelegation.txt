@@ -1,0 +1,106 @@
+description "Behaviour for the task-delegation environment"
+
+# ------------------------------------------------
+# The amount of the behavior states the agent has
+# ------------------------------------------------
+nbStates 5                          # The basic behavior is implemented in a single state
+
+
+# Enumeration of the behavior agent states
+1 agent.behavior.behavior.Wander
+nbArgs 0
+2 agent.behavior.behavior.MoveTo
+nbArgs 0
+3 agent.behavior.behavior.PickupPacket
+nbArgs 0
+4 agent.behavior.behavior.ReleasePacket
+nbArgs 0                            # 0 arguments required for the constructor
+5 agent.behavior.behavior.UnblockDestination
+nbArgs 0
+
+
+
+# ---------------------------------------------------------------
+# The amount of behavior changes for the agent
+#  (only necessary when more than 1 agent behavior is specified)
+# ---------------------------------------------------------------
+nbChanges 11
+
+agent.behavior.behaviorChange.CanPickup
+nbArgs 0
+priority 1
+source 2        # MoveTo
+target 3        # PickupPacket
+
+agent.behavior.behaviorChange.CanRelease
+nbArgs 0
+priority 1
+source 2        # MoveTo
+target 4        # ReleasePacket
+
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 1
+source 3        # PickupPacket
+target 2        # MoveTo
+
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 1
+source 4        # ReleasePacket
+target 2        # MoveTo
+
+agent.behavior.behaviorChange.NoGoal
+nbArgs 0
+priority 0
+source 3        # PickupPacket
+target 1        # Wander
+
+agent.behavior.behaviorChange.NoGoal
+nbArgs 0
+priority 0
+source 4        # ReleasePacket
+target 1        # Wander
+
+agent.behavior.behaviorChange.ArrivedOnEmpty
+nbArgs 0
+priority 0
+source 2        # MoveTo
+target 1        # Wander
+
+agent.behavior.behaviorChange.SeesGoal
+nbArgs 0
+priority 0
+source 1        # Wander
+target 2        # MoveTo
+
+agent.behavior.behaviorChange.CanUnblock
+nbArgs 0
+priority 2
+source 1        # Wander
+target 5        # UnblockDestination
+
+agent.behavior.behaviorChange.CanUnblock
+nbArgs 0
+priority 2
+source 2        # MoveTo
+target 5        # UnblockDestination
+
+agent.behavior.behaviorChange.HasUnblocked
+nbArgs 0
+priority 0
+source 5        # UnblockDestination
+target 1        # Wander
+
+# ----------------
+# Further comments
+# ----------------
+
+#  Each agent has the same implementation, e.g. all agents work with a single Wander behavior state
+#    when you choose this implementation file.
+
+#  Since the wander behavior is quite simple, there is no need to split up the implementation in multiple behaviors.
+#    For this implementation, a single state suffices to implement the wander behavior.
+
+#  In case of more complex implementations, it becomes more desirable to split the behavior up in different states
+#    so that the complexity becomes easier to manage.

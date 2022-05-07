@@ -10,38 +10,42 @@ import environment.world.energystation.EnergyStationRep;
 import environment.world.flag.FlagRep;
 import environment.world.packet.PacketRep;
 import util.MyColor;
+import util.Pair;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import static agent.behavior.basic.Basic.findOfType;
+import static agent.behavior.basic.Basic.getBestNextMove;
 
 public class SeesGoal extends BehaviorChange {
 
-    private boolean seesDestination, seesPacket, remembersDestination;
+    private boolean seesPacket, remembersDestination;
     public SeesGoal() {
         this.seesPacket = false;
-        this.seesDestination = false;
     }
 
     @Override
     public void updateChange() {
         this.seesPacket = !getAgentState().hasCarry() && getAgentState().seesPacket() && getAgentState().getBatteryState() > 20;
-        this.seesDestination = getAgentState().hasCarry() && getAgentState().seesDestination(getAgentState().getCarry().get().getColor());
         this.remembersDestination = getAgentState().hasCarry() && Memory.knowsDestOf(getAgentState(), getAgentState().getCarry().get().getColor());
 
         if (seesPacket) {
             List<CellPerception> closePackets = findOfType(PacketRep.class, getAgentState());
-            CellPerception closestPacket = closePackets.get(0);
-            Memory.setTarget(getAgentState(), closestPacket);
-        } else if (seesDestination) {
-            Color packetColor = getAgentState().getCarry().get().getColor();
-            List<CellPerception> closeDests = findOfType(DestinationRep.class, getAgentState());
-            CellPerception closestDest = closeDests.stream()
-                    .filter(dest -> dest.containsDestination(packetColor))
-                    .findFirst().orElse(null);
-            Memory.setTarget(getAgentState(), closestDest);
+            for (CellPerception perc : closePackets) {
+                Color packetColor = perc.getRepOfType(PacketRep.class).getColor();
+                //if reachable
+                Pair<int[], ArrayList<Basic.Node>> result = getBestNextMove(getAgentState().getX(), getAgentState().getY(), perc.getX(), perc.getY(), getAgentState(), false);
+                boolean reachable = result.getFirst() != null && result.getSecond().size() == 0;
+                if (Memory.knowsDestOf(getAgentState(), packetColor) && reachable &&
+                        (getAgentState().getColor().isEmpty() || getAgentState().getColor().get() == packetColor)) {
+                    Memory.setTarget(getAgentState(), perc);
+                    seesPacket = true;
+                    break;
+                }
+                else seesPacket = false;
+            }
         } else if (remembersDestination) {
             List<String[]> destLocations = Memory.destinations().getAllStored(getAgentState())
                     .stream()
@@ -68,6 +72,6 @@ public class SeesGoal extends BehaviorChange {
 
     @Override
     public boolean isSatisfied() {
-        return this.seesDestination || this.seesPacket || this.remembersDestination;
+        return this.seesPacket || this.remembersDestination;
     }
 }
