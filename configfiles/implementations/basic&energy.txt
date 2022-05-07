@@ -41,13 +41,13 @@ target 4        # ReleasePacket
 
 agent.behavior.behaviorChange.SeesGoal
 nbArgs 0
-priority 0
+priority 1
 source 3        # PickupPacket
 target 2        # MoveTo
 
 agent.behavior.behaviorChange.SeesGoal
 nbArgs 0
-priority 0
+priority 1
 source 4        # ReleasePacket
 target 2        # MoveTo
 
